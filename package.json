@@ -1,0 +1,14 @@
+{
+  "name": "irios-woocommerce-js-tests",
+  "private": true,
+  "description": "Unit tests of the storefront JS (irios-woocommerce/assets/js) with vitest and jsdom. Not part of the plugin zip.",
+  "license": "GPL-2.0-or-later",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "jsdom": "26.1.0",
+    "vitest": "3.2.4"
+  }
+}

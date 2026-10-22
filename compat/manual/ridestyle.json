@@ -1,0 +1,14 @@
+{
+  "combo": "ridestyle",
+  "checks": {
+    "search_grid": "pass",
+    "ad_label_info": "pass",
+    "ad_card_layout": "pass",
+    "add_to_cart": "na",
+    "banner_category": "pass",
+    "banner_product": "pass",
+    "live_search": "pass"
+  },
+  "warnings": [],
+  "errors": []
+}

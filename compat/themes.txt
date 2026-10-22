@@ -1,0 +1,12 @@
+# Themes (and live search plugins) of the compatibility matrix. One line per combination:
+#   <wordpress.org theme slug> [wordpress.org plugin slug, activated only for that combination]
+storefront
+twentytwentyfive
+astra
+kadence
+oceanwp
+blocksy
+generatepress
+neve
+storefront ajax-search-for-woocommerce
+storefront yith-woocommerce-ajax-search

@@ -1,0 +1,26 @@
+{
+    "name": "kimia/irios-woocommerce",
+    "description": "Irios Media para tiendas WooCommerce: eventos, identidad y Sponsored Products.",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": ">=8.1",
+        "giggsey/libphonenumber-for-php-lite": "^9.0"
+    },
+    "require-dev": {
+        "brain/monkey": "^2.6",
+        "phpunit/phpunit": "^11.5"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Irios\\WooCommerce\\": "src/",
+            "Irios\\WooCommerce\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit"
+    },
+    "config": {
+        "sort-packages": true
+    }
+}

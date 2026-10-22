@@ -1,0 +1,367 @@
+# Spanish (Spain) translation of Irios for WooCommerce.
+# This file is distributed under the same license as the plugin (GPL-2.0-or-later).
+msgid ""
+msgstr ""
+"Project-Id-Version: Irios for WooCommerce\n"
+"Report-Msgid-Bugs-To: https://github.com/Adverxo/iriosmedia-woocommerce-plugin/issues\n"
+"POT-Creation-Date: 2026-10-21 16:39+0200\n"
+"PO-Revision-Date: 2026-10-21 00:00+0000\n"
+"Last-Translator: Irios Media\n"
+"Language-Team: Spanish (Spain)\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: src/Assets.php:105
+msgid "Information about this ad"
+msgstr "Información sobre este anuncio"
+
+#: src/Assets.php:106
+msgid "About this ad"
+msgstr "Acerca de este anuncio"
+
+#: src/Assets.php:107
+msgid "Why am I seeing this ad?"
+msgstr "¿Cuál es el motivo de que se muestre este anuncio?"
+
+#: src/Assets.php:108
+msgid "You are seeing this ad because of:"
+msgstr "Estás viendo este anuncio por lo siguiente:"
+
+#: src/Assets.php:109
+msgid "The ad space of the store where it appears: it does not use information about you."
+msgstr "El espacio de la tienda en el que aparece: no usa información sobre ti."
+
+#: src/Assets.php:111
+msgid "The search terms you have used."
+msgstr "Los términos de búsqueda que has utilizado."
+
+#: src/Assets.php:112
+msgid "The content or products you are viewing on this page."
+msgstr "El contenido o los productos que estás viendo en esta página."
+
+#: src/Assets.php:113
+msgid "Your approximate location (country)."
+msgstr "Tu ubicación aproximada (país)."
+
+#: src/Assets.php:114
+msgid "Your language."
+msgstr "Tu idioma."
+
+#: src/Assets.php:115
+msgid "Your device, operating system, browser or carrier."
+msgstr "Tu dispositivo, sistema operativo, navegador u operador."
+
+#: src/Assets.php:116
+msgid "Information about you held by the store."
+msgstr "Información sobre ti que tiene la tienda."
+
+#: src/Assets.php:117
+msgid "Your activity and history in this store."
+msgstr "Tu actividad e historial en esta tienda."
+
+#: src/Assets.php:118
+msgid "Your previous interaction with the advertiser."
+msgstr "Tu interacción previa con el anunciante."
+
+#: src/Assets.php:120
+msgid "Information about you was used to choose it. You can change this as explained in the"
+msgstr "Para elegirlo se ha usado información sobre ti. Puedes cambiarlo como se explica en la"
+
+#: src/Assets.php:121
+msgid "privacy policy"
+msgstr "política de privacidad"
+
+#: src/Assets.php:123
+msgid "About the advertiser"
+msgstr "Acerca del anunciante"
+
+#: src/Assets.php:124
+msgid "Advertiser name"
+msgstr "Nombre del anunciante"
+
+#: src/Assets.php:125
+msgid "Who paid for this ad"
+msgstr "Quién pagó este anuncio"
+
+#: src/Assets.php:126
+msgid "Not available"
+msgstr "No disponible"
+
+#: src/Assets.php:127
+msgid "Got it"
+msgstr "He entendido"
+
+#: src/Compatibility.php:48
+msgid "child theme of"
+msgstr "tema hijo de"
+
+#. translators: %s: name and slug of the active theme
+#: src/Compatibility.php:63
+#, php-format
+msgid "Unsupported theme: %s."
+msgstr "Tema no soportado: %s."
+
+#: src/Compatibility.php:67
+msgid "This theme is not among the themes tested with Irios Media, so some ads (Sponsored Products in search or in the live search, or banners in automatic positions) may not be shown or may not be placed correctly. Please contact Irios support."
+msgstr "Este tema no está entre los probados con Irios Media, así que puede que algunos anuncios (Sponsored Products en la búsqueda o en el buscador instantáneo, o banners en posiciones automáticas) no se muestren o no se coloquen bien. Contacta con el soporte de Irios."
+
+#. translators: %s: plugin version
+#: src/Integration.php:15
+#, php-format
+msgid "Irios Media visitor events and identity and, optionally, Sponsored Products and banners. Version %s."
+msgstr "Eventos e identidad del visitante de Irios Media y, opcionalmente, Sponsored Products y banners. Versión %s."
+
+#: src/Integration.php:36
+msgid "Irios API domain"
+msgstr "Dominio de Irios API"
+
+#: src/Integration.php:38
+msgid "Without https:// or path, e.g. example.iriosmedia.online. irios-tracker.js and irios-loader.js are loaded from it."
+msgstr "Sin https:// ni ruta, p. ej. example.iriosmedia.online. De ahí se cargan irios-tracker.js e irios-loader.js."
+
+#: src/Integration.php:42
+msgid "Store ID"
+msgstr "Store ID"
+
+#: src/Integration.php:44
+msgid "Numeric id of the store in Irios."
+msgstr "Id numérico de la tienda en Irios."
+
+#: src/Integration.php:48
+msgid "Consent"
+msgstr "Consentimiento"
+
+#: src/Integration.php:51
+msgid "WP Consent API (recommended)"
+msgstr "WP Consent API (recomendado)"
+
+#: src/Integration.php:52
+msgid "Asesor de Cookies RGPD (webartesanal.com banner)"
+msgstr "Asesor de Cookies RGPD (banner de webartesanal.com)"
+
+#: src/Integration.php:53
+msgid "Always (the store handles consent another way)"
+msgstr "Siempre (la tienda gestiona el consentimiento por otra vía)"
+
+#: src/Integration.php:55
+msgid "Until the visitor accepts marketing cookies, only contextual ads are requested: no identifiers, no Irios cookies and no events."
+msgstr "Hasta que el visitante acepta las cookies de marketing solo se piden anuncios contextuales: sin identificadores, sin cookies de Irios y sin eventos."
+
+#: src/Integration.php:61
+msgid "Sponsored Products"
+msgstr "Sponsored Products"
+
+#: src/Integration.php:63
+msgid "Product ads in the search results, with the same card as the other products and the ad label."
+msgstr "Anuncios de productos en los resultados de búsqueda, con la misma tarjeta que el resto de productos y la etiqueta de anuncio."
+
+#: src/Integration.php:66 src/Integration.php:97
+msgid "Enable"
+msgstr "Activar"
+
+#: src/Integration.php:68
+msgid "Show Sponsored Products in the search results"
+msgstr "Mostrar Sponsored Products en los resultados de búsqueda"
+
+#: src/Integration.php:72
+msgid "Positions"
+msgstr "Posiciones"
+
+#: src/Integration.php:77
+msgid "Ad label"
+msgstr "Etiqueta de anuncio"
+
+#: src/Integration.php:79
+msgid "Text added to the sponsored cards. For advertising transparency, do not leave it empty."
+msgstr "Texto que se añade a las tarjetas patrocinadas. Por transparencia publicitaria, no lo dejes vacío."
+
+#: src/Integration.php:80 src/Settings.php:319
+msgid "Sponsored"
+msgstr "Patrocinado"
+
+#: src/Integration.php:83
+msgid "Single-result search"
+msgstr "Búsqueda con un resultado"
+
+#: src/Integration.php:85
+msgid "Show the results page instead of going straight to the product page"
+msgstr "Mostrar la página de resultados en vez de ir directamente a la ficha"
+
+#: src/Integration.php:86
+msgid "Without a results page, Sponsored Products cannot be shown."
+msgstr "Sin página de resultados no se pueden mostrar Sponsored Products."
+
+#: src/Integration.php:92 src/Integration.php:103
+msgid "Banners"
+msgstr "Banners"
+
+#: src/Integration.php:94
+msgid "Irios banners anywhere on the site. Add each banner with a tag and its Irios ad unit details, and paste [irios_banner tag=\"TAG\"] wherever you want to show it: a page, a WPBakery element, a block, a widget or a category description. When disabled, the shortcodes show nothing."
+msgstr "Banners de Irios en cualquier parte de la web. Da de alta cada banner con un tag y los datos de su ad unit en Irios, y pega [irios_banner tag=\"TAG\"] donde quieras mostrarlo: una página, un elemento de WPBakery, un bloque, un widget o la descripción de una categoría. Desactivado, los shortcodes no muestran nada."
+
+#: src/Integration.php:99
+msgid "Show Irios banners"
+msgstr "Mostrar los banners de Irios"
+
+#: src/Integration.php:158
+msgid "Manual (shortcode)"
+msgstr "Manual (shortcode)"
+
+#: src/Integration.php:159
+msgid "Category page: bottom"
+msgstr "Página de categoría: al final del listado"
+
+#: src/Integration.php:160
+msgid "Product page: middle"
+msgstr "Ficha de producto: antes de la descripción"
+
+#: src/Integration.php:167
+msgid "home"
+msgstr "portada"
+
+#: src/Integration.php:169 src/Integration.php:209
+msgid "ad unit auth"
+msgstr "auth del ad unit"
+
+#: src/Integration.php:177
+msgid "Tag"
+msgstr "Tag"
+
+#: src/Integration.php:178 src/Integration.php:217
+msgid "Ad unit (id)"
+msgstr "Ad unit (id)"
+
+#: src/Integration.php:179 src/Integration.php:218
+msgid "Auth"
+msgstr "Auth"
+
+#: src/Integration.php:180 src/Integration.php:216
+msgid "Position"
+msgstr "Posición"
+
+#: src/Integration.php:184
+msgid "Add banner"
+msgstr "Añadir banner"
+
+#: src/Integration.php:185
+msgid "On the site: [irios_banner tag=\"TAG\"], or an automatic position. Tag in lowercase, without spaces (e.g. home, category-sticks)."
+msgstr "En la web: [irios_banner tag=\"TAG\"], o una posición automática. Tag en minúsculas, sin espacios (p. ej. portada, categoria-sticks)."
+
+#: src/Integration.php:222
+msgid "Add position"
+msgstr "Añadir posición"
+
+#: src/Integration.php:223
+msgid "One ad per row. The position is the slot in the results grid: 1 is top left, counted in reading order (left to right, row by row). The same ad unit can take several positions. They are also used in the live search dropdown, each ad at its position in the list."
+msgstr "Un anuncio por fila. La posición es el hueco en la rejilla de resultados: 1 es arriba a la izquierda y se cuenta en orden de lectura (izquierda a derecha, fila a fila). Un mismo ad unit puede ocupar varias posiciones. También se usan en el desplegable del buscador, cada anuncio en su posición de la lista."
+
+#: src/Integration.php:252
+msgid "Remove"
+msgstr "Quitar"
+
+#: src/Integration.php:334
+msgid "Irios: to show Sponsored Products, add at least one position with its ad unit and auth. Until then, no ads are shown."
+msgstr "Irios: para mostrar Sponsored Products hay que dar de alta al menos una posición con su ad unit y su auth. Mientras falten, no se muestran anuncios."
+
+#: src/Integration.php:344
+msgid "Irios: the JS domain is not valid."
+msgstr "Irios: el dominio JS no es válido."
+
+#: src/Integration.php:352
+msgid "Irios: the Store ID must be a number."
+msgstr "Irios: el Store ID debe ser un número."
+
+#: src/Plugin.php:43
+msgid "Irios for WooCommerce requires WooCommerce to be active."
+msgstr "Irios for WooCommerce necesita WooCommerce activo."
+
+#: src/Plugin.php:55
+msgid "Irios for WooCommerce is not configured: the JS domain or the Store ID is missing, so nothing is sent to Irios."
+msgstr "Irios for WooCommerce no está configurado: falta el dominio JS o el Store ID, así que no se envía nada a Irios."
+
+#: src/Plugin.php:57
+msgid "Configure"
+msgstr "Configurar"
+
+#: src/Plugin.php:62
+msgid "Irios for WooCommerce uses the \"Asesor de Cookies RGPD\" banner, but it is not active: without it there is no consent, so only contextual ads are shown and no events are sent."
+msgstr "Irios for WooCommerce usa el banner \"Asesor de Cookies RGPD\", pero no está activo: sin él no hay consentimiento, así que solo se muestran anuncios contextuales y no se envían eventos."
+
+#: src/Plugin.php:67
+msgid "Irios for WooCommerce uses the WP Consent API, but it is not installed: without it there is no consent, so only contextual ads are shown and no events are sent. Install the \"WP Consent API\" plugin (and a compatible cookie banner) or change the consent mode."
+msgstr "Irios for WooCommerce usa la WP Consent API, pero no está instalada: sin ella no hay consentimiento, así que solo se muestran anuncios contextuales y no se envían eventos. Instala el plugin \"WP Consent API\" (y un banner de cookies compatible) o cambia el modo de consentimiento."
+
+#: src/Plugin.php:72
+msgid "Irios for WooCommerce: the WP Consent API is installed, but no cookie banner uses it. Without a banner there is no consent, so only contextual ads are shown and no events are sent. Activate a compatible banner (Complianz, CookieYes, Cookiebot…) or change the consent mode."
+msgstr "Irios for WooCommerce: la WP Consent API está instalada, pero ningún banner de cookies la usa. Sin banner no hay consentimiento, así que solo se muestran anuncios contextuales y no se envían eventos. Activa un banner compatible (Complianz, CookieYes, Cookiebot…) o cambia el modo de consentimiento."
+
+#. translators: %s: banner tag
+#: src/Settings.php:152
+#, php-format
+msgid "Invalid tag \"%s\": use lowercase letters, numbers, - or _"
+msgstr "Tag \"%s\" no válido: usa letras minúsculas, números, - o _"
+
+#. translators: %s: banner tag
+#: src/Settings.php:160
+#, php-format
+msgid "Duplicate tag \"%s\""
+msgstr "Tag \"%s\" repetido"
+
+#. translators: %s: banner tag
+#: src/Settings.php:168
+#, php-format
+msgid "Banner \"%s\": the numeric ad unit id or its auth is missing"
+msgstr "Banner \"%s\": falta el id numérico del ad unit o su auth"
+
+#. translators: 1: banner tag, 2: position
+#: src/Settings.php:176
+#, php-format
+msgid "Banner \"%1$s\": unknown position \"%2$s\""
+msgstr "Banner \"%1$s\": posición \"%2$s\" desconocida"
+
+#. translators: 1: position entered, 2: highest position
+#: src/Settings.php:279
+#, php-format
+msgid "Invalid position \"%1$s\": a number from 1 to %2$d"
+msgstr "Posición \"%1$s\" no válida: un número del 1 al %2$d"
+
+#. translators: %d: position
+#: src/Settings.php:288
+#, php-format
+msgid "Duplicate position %d"
+msgstr "Posición %d repetida"
+
+#. translators: %d: position
+#: src/Settings.php:296
+#, php-format
+msgid "Position %d: the numeric ad unit id or its auth is missing"
+msgstr "Posición %d: falta el id numérico del ad unit o su auth"
+
+#: src/Updates.php:102
+msgid "Release notes"
+msgstr "Notas de la versión"
+
+#: src/Updates.php:104
+msgid "Download the zip"
+msgstr "Descargar el zip"
+
+#. translators: 1: new version, 2: installed version
+#: src/Updates.php:113
+#, php-format
+msgid "Irios for WooCommerce %1$s is available (installed: %2$s)."
+msgstr "Irios for WooCommerce %1$s está disponible (instalada: %2$s)."
+
+#: src/Updates.php:142
+msgid "The plugin does not update automatically: to update, download the zip and upload it in Plugins → Add New → Upload Plugin (WordPress offers to replace the installed version and the settings are kept)."
+msgstr "El plugin no se actualiza automáticamente: para actualizarlo, descarga el zip y súbelo en Plugins → Añadir nuevo → Subir plugin (WordPress ofrece reemplazar la versión instalada y los ajustes se conservan)."
+
+#: src/Updates.php:145
+msgid "Dismiss"
+msgstr "Descartar"
+
+#. Plugin description (irios-woocommerce.php header)
+msgid "Irios Media browsing and product events, visitor identity, Sponsored Products and banners for WooCommerce stores."
+msgstr "Eventos de navegación y producto, identidad del visitante, Sponsored Products y banners de Irios Media en tiendas WooCommerce."

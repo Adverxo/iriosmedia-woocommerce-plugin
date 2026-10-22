@@ -1,0 +1,87 @@
+# WooCommerce test store for the "Irios for WooCommerce" plugin (local development only).
+#   docker compose up -d && ./bin/setup-store.sh   → http://localhost  (admin / admin)
+services:
+  db:
+    image: mariadb:11
+    environment:
+      MARIADB_DATABASE: wordpress
+      MARIADB_USER: wordpress
+      MARIADB_PASSWORD: wordpress
+      MARIADB_ROOT_PASSWORD: root
+    volumes:
+      - db:/var/lib/mysql
+
+  wordpress:
+    image: wordpress:php8.3-apache
+    depends_on: [db]
+    ports:
+      - "80:80"   # no port: Irios checks the page domain (the store domain via /etc/hosts) and gives no ads with a port
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+    volumes:
+      - wp:/var/www/html
+      - ./irios-woocommerce:/var/www/html/wp-content/plugins/irios-woocommerce:ro   # read-only: updating the plugin from wp-admin would delete the source code
+
+  cli:
+    image: wordpress:cli-php8.3
+    profiles: [cli]
+    depends_on: [db, wordpress]
+    user: "33:33"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+    volumes:
+      - wp:/var/www/html
+      - ./irios-woocommerce:/var/www/html/wp-content/plugins/irios-woocommerce:ro   # read-only: updating the plugin from wp-admin would delete the source code
+
+  # ---- Store to test the zip as in a real store (without the mounted code) -----------------------------------------
+  #   docker compose --profile zip up -d && ./bin/setup-zip-store.sh   → http://localhost:8089  (admin / admin)
+  #   There the plugin is installed and updated from Plugins → Add New → Upload Plugin, with the zip from bin/package.sh.
+  db-zip:
+    image: mariadb:11
+    profiles: [zip]
+    environment:
+      MARIADB_DATABASE: wordpress
+      MARIADB_USER: wordpress
+      MARIADB_PASSWORD: wordpress
+      MARIADB_ROOT_PASSWORD: root
+    volumes:
+      - db-zip:/var/lib/mysql
+
+  wordpress-zip:
+    image: wordpress:php8.3-apache
+    profiles: [zip]
+    depends_on: [db-zip]
+    ports:
+      - "8089:80"
+    environment:
+      WORDPRESS_DB_HOST: db-zip
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+    volumes:
+      - wp-zip:/var/www/html
+
+  cli-zip:
+    image: wordpress:cli-php8.3
+    profiles: [zip-cli]
+    depends_on: [db-zip, wordpress-zip]
+    user: "33:33"
+    environment:
+      WORDPRESS_DB_HOST: db-zip
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+    volumes:
+      - wp-zip:/var/www/html
+
+volumes:
+  db:
+  wp:
+  db-zip:
+  wp-zip:
