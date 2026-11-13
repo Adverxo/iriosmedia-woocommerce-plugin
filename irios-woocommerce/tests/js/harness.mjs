@@ -4,10 +4,36 @@
 //   - IriosEvent (tracker) → events;  IriosLoader (auction) → auctions, with the winners given to it;
 //   - IriosTracker (ad load, visibility and click) → tracked;
 //   - fetch: /irios/v1/context and /irios/v1/cards with the test's responses → requests.
-import { readFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { JSDOM } from "jsdom";
+import { createInstrumenter } from "istanbul-lib-instrument";
 
-const SCRIPT = readFileSync(new URL("../../assets/js/irios-woocommerce.js", import.meta.url), "utf8");
+const SCRIPT_URL = new URL("../../assets/js/irios-woocommerce.js", import.meta.url);
+const SCRIPT_PATH = fileURLToPath(SCRIPT_URL);
+const SOURCE = readFileSync(SCRIPT_URL, "utf8");
+
+/**
+ * The storefront JS is run with window.eval, exactly as WordPress serves it, so no coverage tool can see inside it.
+ * With IRIOS_COVERAGE=1 it is instrumented first and what each page covered is added up (tests/js/coverage.mjs), so
+ * what is tested can be measured without changing how it is tested.
+ */
+const COVERAGE = process.env.IRIOS_COVERAGE === "1";
+const instrumenter = COVERAGE ? createInstrumenter({ esModules: false, coverageGlobalScopeFunc: false }) : null;
+const SCRIPT = COVERAGE ? instrumenter.instrumentSync(SOURCE, SCRIPT_PATH) : SOURCE;
+
+// Tests run in parallel workers, so each page leaves what it covered in its own file and bin/coverage-js.sh adds
+// them all up.
+const COVERAGE_DIR = fileURLToPath(new URL("../../build/js-coverage", import.meta.url));
+let pagesCovered = 0;
+
+function keepWhatThisPageCovered(window) {
+  if (!COVERAGE || !window.__coverage__) {
+    return;
+  }
+  mkdirSync(COVERAGE_DIR, { recursive: true });
+  writeFileSync(`${COVERAGE_DIR}/${process.pid}-${pagesCovered++}.json`, JSON.stringify([window.__coverage__]));
+}
 const ORIGIN = "https://shop.test";
 
 export const CONFIG = {
@@ -104,7 +130,15 @@ export function storefront({ consent = true, page = { type: "page" }, body = "",
   if (before) before(window);
 
   window.eval(SCRIPT);
-  return { window, document: window.document, log, close: () => window.close() };
+  return {
+    window,
+    document: window.document,
+    log,
+    close: () => {
+      keepWhatThisPageCovered(window);
+      window.close();
+    },
+  };
 }
 
 /** Lets the script's promises and short timers run. */
