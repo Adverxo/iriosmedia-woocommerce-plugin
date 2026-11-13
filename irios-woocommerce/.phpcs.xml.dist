@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<ruleset name="IRIOS Media for WooCommerce">
+    <description>
+        WordPress coding standards for the plugin. The point is not the formatting: it is that the phpcs:ignore
+        comments scattered through the code are checked by something instead of being taken on trust.
+    </description>
+
+    <file>src</file>
+    <file>irios-woocommerce.php</file>
+    <file>uninstall.php</file>
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+
+    <arg name="extensions" value="php"/>
+    <arg name="colors"/>
+    <arg value="sp"/>
+
+    <rule ref="WordPress-Core"/>
+    <rule ref="WordPress-Docs"/>
+    <rule ref="WordPress.Security"/>
+    <rule ref="WordPress.DB"/>
+
+    <!-- The code is documented where it explains why, not with a docblock on every method -->
+    <rule ref="Squiz.Commenting.FunctionComment">
+        <severity>0</severity>
+    </rule>
+    <rule ref="Squiz.Commenting.ClassComment">
+        <severity>0</severity>
+    </rule>
+    <rule ref="Squiz.Commenting.VariableComment">
+        <severity>0</severity>
+    </rule>
+    <rule ref="Squiz.Commenting.FileComment">
+        <severity>0</severity>
+    </rule>
+    <rule ref="Generic.Commenting.DocComment.MissingShort">
+        <severity>0</severity>
+    </rule>
+
+    <!-- Class files are named after the class (PSR-4 autoloading), not WordPress's class-foo.php -->
+    <rule ref="WordPress.Files.FileName">
+        <severity>0</severity>
+    </rule>
+
+    <!-- Comments explain why; they are not forced to end in a full stop or start with a capital -->
+    <rule ref="Squiz.Commenting.InlineComment.InvalidEndChar">
+        <severity>0</severity>
+    </rule>
+    <rule ref="Generic.Commenting.DocComment.ShortNotCapital">
+        <severity>0</severity>
+    </rule>
+
+    <!-- Alignment of => and of assignments: the formatting is not what this is for -->
+    <rule ref="WordPress.Arrays.MultipleStatementAlignment">
+        <severity>0</severity>
+    </rule>
+    <rule ref="Generic.Formatting.MultipleStatementAlignment">
+        <severity>0</severity>
+    </rule>
+    <rule ref="WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound">
+        <severity>0</severity>
+    </rule>
+    <rule ref="Universal.Operators.DisallowShortTernary">
+        <severity>0</severity>
+    </rule>
+    <!-- $class as a parameter name: it reads better than the alternatives and PHP allows it -->
+    <rule ref="Universal.NamingConventions.NoReservedKeywordParameterNames">
+        <severity>0</severity>
+    </rule>
+
+    <config name="minimum_supported_wp_version" value="6.4"/>
+    <config name="testVersion" value="8.1-"/>
+</ruleset>

@@ -9,7 +9,9 @@
     },
     "require-dev": {
         "brain/monkey": "^2.6",
-        "phpunit/phpunit": "^11.5"
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+        "phpunit/phpunit": "^11.5",
+        "wp-coding-standards/wpcs": "^3.1"
     },
     "autoload-dev": {
         "psr-4": {
@@ -21,6 +23,9 @@
         "test": "phpunit"
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
     }
 }

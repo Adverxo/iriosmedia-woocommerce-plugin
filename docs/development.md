@@ -84,6 +84,14 @@ composer install
 vendor/bin/phpunit
 ```
 
+Coverage and coding standards, each in its own container so the local PHP is left alone:
+
+```bash
+bin/coverage.sh      # PHP, fails below the minimum
+bin/coverage-js.sh   # the storefront JS: instrumented before the eval the tests run it with
+bin/lint.sh          # WordPress coding standards (bin/lint.sh --fix fixes what it can)
+```
+
 They run without WordPress: pure logic is tested directly, and the code that calls WordPress/WooCommerce (consent,
 cart events, the context endpoint, the order uid, translatable settings errors…) with
 [Brain Monkey](https://github.com/Brain-WP/BrainMonkey) and the minimal doubles in `tests/doubles.php` (base class
