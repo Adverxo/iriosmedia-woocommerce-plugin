@@ -162,6 +162,20 @@ Events, identity and the sponsored product card rely on standard WooCommerce hoo
 theme. Where ads are placed depends on the theme: the results grid, the live search dropdown and the automatic banner
 positions. If an ad cannot be placed, it is simply not shown and the store keeps working.
 
+A theme that names those parts differently can be adapted from the site itself, without waiting for a version of the
+plugin. In the theme's `functions.php` or a small plugin:
+
+```php
+add_filter( 'irios_woocommerce_selectors', function ( array $selectors ) {
+    $selectors['grid'] = '.my-results';   // where the results are
+    $selectors['sidebar'] = '.my-aside';  // where the "Category: sidebar" placement goes
+    return $selectors;
+} );
+```
+
+The names are `grid`, `title`, `listingControls`, `productTabs`, `related`, `sidebar`, `notResults` and
+`liveDropdown`; what is not given keeps the tested default (`src/Selectors.php`).
+
 <!-- compat:start -->
 Tested on 2026-10-21. ✅ works · ❌ fails · — not applicable, e.g. the theme has no live search.
 

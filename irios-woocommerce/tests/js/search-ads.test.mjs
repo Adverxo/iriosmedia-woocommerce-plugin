@@ -1,7 +1,7 @@
 // Sponsored Products on the results page: positions, repeated organic results, label, tracking and auction with
 // or without consent.
 import { afterEach, describe, expect, it } from "vitest";
-import { grid, settle, storefront, winner } from "./harness.mjs";
+import { card, grid, settle, storefront, winner } from "./harness.mjs";
 
 let store;
 afterEach(() => store && store.close());
@@ -176,6 +176,25 @@ describe("search ads", () => {
     expect(img.getAttribute("src")).toBe(`${ORIGIN}/p7.jpg`);
     expect(img.style.aspectRatio).toBe("290 / 145");
     expect(img.style.objectFit).toBe("contain");
+  });
+
+  it("a theme that names its results grid differently is adapted from the site, without a new version", async () => {
+    const ORIGIN = "https://shop.test";
+    const results = Object.fromEntries([1, 2].map((id) => [`${ORIGIN}/product/p${id}/`, id]));
+    store = storefront({
+      body: `<div class="mi-rejilla">${[1, 2].map(card).join("")}</div>`,
+      page: {
+        type: "search",
+        value: "stick",
+        ads: { units: [{ adUnit: UNIT, auth: "abc", positions: [1] }], searchQuery: "stick", language: "es-ES", results, empty: false },
+      },
+      // What the irios_woocommerce_selectors filter of the site would have changed
+      config: { selectors: { grid: ".mi-rejilla" } },
+      winners: [winner(UNIT, 1, 7)],
+    });
+    await settle();
+
+    expect(store.document.querySelector(".mi-rejilla > .irios-sponsored")).not.toBeNull();
   });
 
   it("without winners nothing changes and no cards are asked for", async () => {

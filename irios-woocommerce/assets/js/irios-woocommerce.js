@@ -568,8 +568,18 @@
 	 * URLs. Only with consent, ad unit and auth.
 	 */
 	// Product grid: ul.products (WooCommerce), div.products (some themes) or the template block.
-	var GRID_SELECTOR = '.products, .wc-block-product-template';
-	var TITLE_SELECTOR = '.woocommerce-loop-product__title, .product-title, .post-title, .entry-title, .wp-block-post-title, h2, h3';
+	/**
+	 * Where each thing is in this theme's HTML. PHP serves them (Selectors), so a theme can be adapted with the
+	 * irios_woocommerce_selectors filter without waiting for a version of the plugin; the values here are the same
+	 * defaults, kept for a store whose page was printed by an older version.
+	 */
+	function selector( name, fallback ) {
+		var given = cfg.selectors && cfg.selectors[ name ];
+		return typeof given === 'string' && given.trim() ? given : fallback;
+	}
+
+	var GRID_SELECTOR = selector( 'grid', '.products, .wc-block-product-template' );
+	var TITLE_SELECTOR = selector( 'title', '.woocommerce-loop-product__title, .product-title, .post-title, .entry-title, .wp-block-post-title, h2, h3' );
 	// Add-to-cart links (they don't navigate to the product page): not counted as ad clicks.
 	var CART_LINK_SELECTOR = '.ajax_add_to_cart, [href*="add-to-cart="]';
 
@@ -1301,17 +1311,17 @@
 	// ---- Display ([irios_display tag="…"], resolved in PHP to format, device, id and auth) -----------------------------
 
 	/** Controls placed after the grid (sorting, result count, pagination): the listing banner goes below them. */
-	var LISTING_CONTROLS_SELECTOR =
-		'.storefront-sorting, .woocommerce-ordering, .woocommerce-result-count, .woocommerce-pagination, nav.pagination, .pagi-nav';
+	var LISTING_CONTROLS_SELECTOR = selector( 'listingControls',
+		'.storefront-sorting, .woocommerce-ordering, .woocommerce-result-count, .woocommerce-pagination, nav.pagination, .pagi-nav' );
 
 		/** Product page tabs (description, additional information…): classic WooCommerce, custom themes and blocks. */
-	var PRODUCT_TABS_SELECTOR = '.woocommerce-tabs, .detail-tabs, .wp-block-woocommerce-product-details';
+	var PRODUCT_TABS_SELECTOR = selector( 'productTabs', '.woocommerce-tabs, .detail-tabs, .wp-block-woocommerce-product-details' );
 
 	/** Related and upsell products of the product page: classic WooCommerce, custom themes and blocks. */
-	var RELATED_SELECTOR = 'section.related.products, .related.products, section.upsells.products, .upsells.products, .wp-block-woocommerce-related-products';
+	var RELATED_SELECTOR = selector( 'related', 'section.related.products, .related.products, section.upsells.products, .upsells.products, .wp-block-woocommerce-related-products' );
 
 	/** Shop sidebar: classic themes (Storefront and most) and block themes. */
-	var SIDEBAR_SELECTOR = '#secondary, aside.widget-area, .widget-area, aside.sidebar, #sidebar, .shop-sidebar';
+	var SIDEBAR_SELECTOR = selector( 'sidebar', '#secondary, aside.widget-area, .widget-area, aside.sidebar, #sidebar, .shop-sidebar' );
 
 	/** Desktop from this width (the IRIOS Media standard), mobile below it. */
 	var DESKTOP_FROM = 768;
@@ -1704,12 +1714,12 @@
 	 */
 	var live = { timer: null, prefetch: null, ads: {}, typedInput: null, watch: null, found: false };
 	// Links that are not search results even though they sit in its area: the header mini-cart, for example.
-	var NOT_RESULTS_SELECTOR = '[class*="mini-cart"], [class*="minicart"], .widget_shopping_cart, .woocommerce-mini-cart, .cart_list';
+	var NOT_RESULTS_SELECTOR = selector( 'notResults', '[class*="mini-cart"], [class*="minicart"], .widget_shopping_cart, .woocommerce-mini-cart, .cart_list' );
 	var LIVE_HOLD_MS = 600; // max time the list stays hidden waiting for ads
 	var SEARCH_INPUT = 'input[name="s"], input[type="search"]';
 	// Live search suggestion containers that are not inside the form
-	var LIVE_DROPDOWN_SELECTOR =
-		'[class*="suggestion"], [class*="autocomplete"], [class*="search-result"], [class*="live-search"], [class*="ajax-search"]';
+	var LIVE_DROPDOWN_SELECTOR = selector( 'liveDropdown',
+		'[class*="suggestion"], [class*="autocomplete"], [class*="search-result"], [class*="live-search"], [class*="ajax-search"]' );
 
 	/** With consent, once the customer's uids are available; without it, immediately (contextual ads). */
 	function liveSearchEnabled() {

@@ -4,6 +4,11 @@ Changes in each version of IRIOS Media for WooCommerce. Download any version fro
 
 ## 1.1.1 - 2026-11-13
 
+### Added
+
+- `irios_woocommerce_selectors`: a theme that names its results grid, its sidebar or its live search dropdown
+  differently can now be adapted from the site itself, without waiting for a version of the plugin.
+
 ### Fixed
 
 - The live search no longer watches the whole page: it starts watching only after the shopper types in a search box,

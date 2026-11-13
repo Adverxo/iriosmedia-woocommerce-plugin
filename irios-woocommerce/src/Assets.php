@@ -86,6 +86,8 @@ final class Assets {
 			// To render an ad from Irios data if WordPress does not return its card.
 			'currency'        => function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : 'EUR',
 			'productBase'     => self::product_base(),
+			// Where each thing is in this theme's HTML; a theme can change them with the irios_woocommerce_selectors filter
+			'selectors'       => Selectors::all(),
 			'liveSearchAds'   => self::live_search_ads( $settings ),
 			'bannersEnabled'  => $settings->banners_enabled(),
 			'gridAfter'       => $settings->display_in_grid_after(),
