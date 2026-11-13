@@ -40,3 +40,6 @@ e2e/blob-report/
 *.iml
 .vscode/
 .DS_Store
+
+# Coverage reports (bin/coverage.sh)
+irios-woocommerce/build/

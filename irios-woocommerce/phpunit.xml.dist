@@ -4,6 +4,19 @@
          bootstrap="tests/bootstrap.php"
          colors="true"
          failOnWarning="true">
+    <!-- Cobertura: necesita pcov o xdebug. bin/coverage.sh la saca en un contenedor con pcov, sin tocar el PHP local. -->
+    <source>
+        <include>
+            <directory>src</directory>
+        </include>
+    </source>
+    <coverage>
+        <report>
+            <html outputDirectory="build/coverage"/>
+            <text outputFile="php://stdout" showOnlySummary="true"/>
+        </report>
+    </coverage>
+
     <testsuites>
         <testsuite name="unit">
             <directory>tests</directory>

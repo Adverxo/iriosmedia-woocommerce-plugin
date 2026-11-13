@@ -18,6 +18,8 @@ abstract class WordPressTestCase extends TestCase {
 	protected array $settings = array();
 	/** Stored transients: key → value. */
 	protected array $transients = array();
+	/** How long each stored transient was asked to last, in seconds. */
+	protected array $transient_ttls = array();
 	/** What WC() returns. */
 	protected \stdClass $wc;
 	protected int $user_id = 0;
@@ -40,8 +42,9 @@ abstract class WordPressTestCase extends TestCase {
 		);
 		Functions\when( 'get_transient' )->alias( fn ( $key ) => $this->transients[ $key ] ?? false );
 		Functions\when( 'set_transient' )->alias(
-			function ( $key, $value ) {
+			function ( $key, $value, $ttl = 0 ) {
 				$this->transients[ $key ] = $value;
+				$this->transient_ttls[ $key ] = (int) $ttl;
 				return true;
 			}
 		);
@@ -85,6 +88,11 @@ abstract class WordPressTestCase extends TestCase {
 			$by_id[ $product->get_id() ] = $product;
 		}
 		Functions\when( 'wc_get_product' )->alias( fn ( $id ) => $by_id[ (int) $id ] ?? false );
+	}
+
+	/** Seconds the code asked a transient to last. */
+	protected function transient_ttl( string $key ): int {
+		return $this->transient_ttls[ $key ] ?? 0;
 	}
 
 	/** Pending events stored for a WooCommerce session customer. */

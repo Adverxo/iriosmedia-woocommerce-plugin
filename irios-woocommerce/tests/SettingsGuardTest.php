@@ -14,6 +14,7 @@ use PHPUnit\Framework\Attributes\RunInSeparateProcess;
  */
 final class SettingsGuardTest extends WordPressTestCase {
 
+	/** plugin_basename() of this plugin, as WordPress gives it. */
 	private const OWN = 'irios-woocommerce/irios-woocommerce.php';
 	private const OLD = 'irios-for-woocommerce/irios-for-woocommerce.php';
 
@@ -28,7 +29,6 @@ final class SettingsGuardTest extends WordPressTestCase {
 	#[RunInSeparateProcess]
 	#[PreserveGlobalState( false )]
 	public function test_the_old_plugins_uninstall_leaves_the_settings_as_they_were(): void {
-		define( 'IRIOS_WC_FILE', '/var/www/html/wp-content/plugins/' . self::OWN );
 		define( 'WP_UNINSTALL_PLUGIN', self::OLD );
 		Functions\when( 'plugin_basename' )->justReturn( self::OWN );
 		$this->settings = array( 'js_domain' => 'shop.iriosmedia.online', 'store_id' => '42' );
@@ -50,7 +50,6 @@ final class SettingsGuardTest extends WordPressTestCase {
 	#[RunInSeparateProcess]
 	#[PreserveGlobalState( false )]
 	public function test_outside_an_uninstall_deleting_the_settings_deletes_them(): void {
-		define( 'IRIOS_WC_FILE', '/var/www/html/wp-content/plugins/' . self::OWN );
 		Functions\when( 'plugin_basename' )->justReturn( self::OWN );
 		$this->settings = array( 'store_id' => '42' );
 		Functions\expect( 'update_option' )->never();

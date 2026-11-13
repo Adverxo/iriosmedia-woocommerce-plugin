@@ -30,9 +30,17 @@ final class Push {
 		return '' === $path ? '/' : trailingslashit( $path );
 	}
 
+	/**
+	 * Is this request the one for the service worker? Its path has to be exactly the one the browser registers (the
+	 * store's path plus irios-sw.js); what comes after it, like a query string, does not count.
+	 */
+	public static function is_service_worker( string $uri ): bool {
+		return (string) wp_parse_url( $uri, PHP_URL_PATH ) === self::scope() . self::PATH;
+	}
+
 	public static function maybe_serve(): void {
 		$uri = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-		if ( (string) wp_parse_url( $uri, PHP_URL_PATH ) !== self::scope() . self::PATH ) {
+		if ( ! self::is_service_worker( $uri ) ) {
 			return;
 		}
 		$settings = Settings::load();

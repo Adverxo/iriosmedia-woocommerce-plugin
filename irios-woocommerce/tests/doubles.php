@@ -46,7 +46,55 @@ class WP_REST_Request implements ArrayAccess {
 	}
 }
 
+/** WordPress error: the code only asks whether it is one. */
+class WP_Error {
+	public function __construct(public string $code = 'error', public string $message = '') {}
+}
+
+/** A WordPress theme: only its name, which is what the compatibility warning shows. */
+class WP_Theme {
+	public function __construct(private string $name = 'Storefront') {}
+
+	public function get( string $field ) {
+		return 'Name' === $field ? $this->name : '';
+	}
+}
+
+/** Base class of a WooCommerce integration: only what Integration reads from it. */
+class WC_Integration {
+	public $id = '';
+	public $method_title = '';
+	public $method_description = '';
+	public array $form_fields = array();
+	public array $settings = array();
+
+	public function init_settings(): void {}
+
+	public function get_option( string $key, $default = '' ) {
+		return $this->settings[ $key ] ?? $default;
+	}
+
+	/** Name of the field in the form, as WooCommerce builds it. */
+	public function get_field_key( string $key ): string {
+		return 'woocommerce_' . $this->id . '_' . $key;
+	}
+}
+
+/** Errors WooCommerce shows at the top of the settings screen. */
+class WC_Admin_Settings {
+	/** @var string[] */
+	public static array $errors = array();
+
+	public static function add_error( string $message ): void {
+		self::$errors[] = $message;
+	}
+}
+
 class WC_Product {
+	private string $status = 'publish';
+	private bool $visible = true;
+	private int $parent = 0;
+
 	public function __construct( private int $id, private float $price = 10.0, private string $type = 'simple' ) {}
 
 	public function get_id(): int {
@@ -61,12 +109,23 @@ class WC_Product {
 		return $type === $this->type;
 	}
 
+	public function with( string $status, bool $visible = true, int $parent = 0 ): self {
+		$this->status = $status;
+		$this->visible = $visible;
+		$this->parent = $parent;
+		return $this;
+	}
+
 	public function get_status(): string {
-		return 'publish';
+		return $this->status;
 	}
 
 	public function is_visible(): bool {
-		return true;
+		return $this->visible;
+	}
+
+	public function get_parent_id(): int {
+		return $this->parent;
 	}
 
 	public function get_name(): string {
@@ -83,6 +142,10 @@ class WC_Product {
 
 	public function get_short_description(): string {
 		return '';
+	}
+
+	public function get_description(): string {
+		return 'Descripción del producto ' . $this->id;
 	}
 
 	public function get_date_created() {
@@ -170,5 +233,72 @@ class WP_Term {
 	public function __construct( int $term_id, string $name ) {
 		$this->term_id = $term_id;
 		$this->name    = $name;
+	}
+}
+
+/** WordPress database access: records the SQL the code builds and answers with what the test sets. */
+class WPDB_Fake {
+	public string $prefix = 'wp_';
+	public string $posts = 'wp_posts';
+	public string $postmeta = 'wp_postmeta';
+	/** @var string[] SQL actually run */
+	public array $queries = array();
+	/** @var mixed[] rows for get_col */
+	public array $col = array();
+	/** @var mixed value for get_var */
+	public $var = null;
+
+	public function prepare( string $sql, ...$args ): string {
+		foreach ( $args as $arg ) {
+			$sql = (string) preg_replace( '/%[sd]/', is_int( $arg ) ? (string) $arg : "'" . $arg . "'", $sql, 1 );
+		}
+		return $sql;
+	}
+
+	public function get_col( string $sql ): array {
+		$this->queries[] = $sql;
+		return $this->col;
+	}
+
+	public function get_var( string $sql ) {
+		$this->queries[] = $sql;
+		return $this->var;
+	}
+}
+
+/** A registered customer, as the feed reads them. An id of 0 means there is no such customer. */
+class WC_Customer {
+	public function __construct( private int $id ) {}
+
+	public function get_id(): int {
+		return $this->id;
+	}
+
+	public function get_email(): string {
+		return 'cliente' . $this->id . '@example.com';
+	}
+
+	public function get_billing_email(): string {
+		return '';
+	}
+
+	public function get_billing_phone(): string {
+		return '';
+	}
+
+	public function get_billing_country(): string {
+		return 'ES';
+	}
+
+	public function get_billing_state(): string {
+		return 'M';
+	}
+
+	public function get_billing_postcode(): string {
+		return '28001';
+	}
+
+	public function get_date_created() {
+		return null;
 	}
 }
