@@ -6,6 +6,12 @@ Changes in each version of IRIOS Media for WooCommerce. Download any version fro
 
 ### Fixed
 
+- The live search no longer watches the whole page: it starts watching only after the shopper types in a search box,
+  and only that box's own corner of the page. Until now, from the first keystroke on, every change anywhere made the
+  plugin walk every link of the document, for the rest of the page's life.
+- The settings are read and checked once per request instead of on every one of the dozen places that ask for them
+  while a page is built.
+- Events already too old to be duplicates are dropped, so the list does not grow for the whole visit.
 - The visitor's own data is served only to pages of the store itself: `/context` and `/cards` now refuse a request
   made from another site. WordPress answers REST requests with credentials, so until now a third-party page could read
   the visitor's cart or make it lose the cart events waiting to be sent.

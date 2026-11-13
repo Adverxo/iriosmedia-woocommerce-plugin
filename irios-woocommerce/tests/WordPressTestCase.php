@@ -27,6 +27,7 @@ abstract class WordPressTestCase extends TestCase {
 	protected function setUp(): void {
 		parent::setUp();
 		Monkey\setUp();
+		Settings::forget(); // the settings are kept for the request, and each test is a new request
 		$_COOKIE                    = array();
 		\WC_Session_Handler::$cookie = false;
 		// Events state that lasts one request in WordPress: each test is a new request

@@ -10,6 +10,9 @@ final class Plugin {
 	public static function boot(): void {
 		Updates::register();
 		SettingsGuard::register();
+		// Saving the settings in this same request: what was read is no longer what is stored
+		add_action( 'update_option_' . Settings::OPTION, array( Settings::class, 'forget' ) );
+		add_action( 'delete_option_' . Settings::OPTION, array( Settings::class, 'forget' ) );
 		if ( ! class_exists( 'WooCommerce' ) ) {
 			add_action( 'admin_notices', array( self::class, 'notice_missing_woocommerce' ) );
 			return;

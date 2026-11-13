@@ -408,6 +408,13 @@
 		var key = JSON.stringify( [ event.id, event.value, event.products ] );
 		var now = Date.now();
 		var last = state.recent[ key ];
+		// Anything older than DEDUP_MS cannot be a duplicate any more: dropped so the map does not grow for the
+		// whole visit (a long browse is hundreds of different events)
+		Object.keys( state.recent ).forEach( function ( old ) {
+			if ( now - state.recent[ old ] >= DEDUP_MS ) {
+				delete state.recent[ old ];
+			}
+		} );
 		state.recent[ key ] = now;
 		return last !== undefined && now - last < DEDUP_MS;
 	}
@@ -1761,6 +1768,7 @@
 			// Only a search box the customer has typed in counts: some themes prefill it ("Search...", or the
 			// term on the results page) and without this any nearby product list would look like its dropdown.
 			live.typedInput = e.target;
+			watchLiveSearch( e.target );
 			var term = e.target.value.trim();
 			window.clearTimeout( live.prefetch );
 			// Debug mode: if no dropdown with products appears after typing, warn (theme without live
@@ -1949,12 +1957,26 @@
 		return normalizeUrl( href ) === normalizeUrl( card.link );
 	}
 
-	if ( window.MutationObserver ) {
-		new window.MutationObserver( function () {
+	/**
+	 * Watches for the dropdown the theme renders while the customer types. It is only installed after the first
+	 * keystroke in a search box, and only over that box's own corner of the page: watching the whole document from
+	 * the start meant walking every link of it on every change, for the whole life of the page.
+	 */
+	function watchLiveSearch( input ) {
+		if ( ! window.MutationObserver || live.observer ) {
+			return;
+		}
+		live.observer = new window.MutationObserver( function () {
 			window.clearTimeout( live.timer );
 			live.timer = window.setTimeout( scanLiveSearch, 50 ); // batches changes from the same render
-		} ).observe( document.body, { childList: true, subtree: true } );
+		} );
+		// The dropdown is a sibling of the search box, or lands next to its form; body only as a last resort
+		var scope = input.closest( 'form' );
+		scope = ( scope && scope.parentElement ) || input.parentElement || document.body;
+		live.observer.observe( scope, { childList: true, subtree: true } );
 	}
+
+	// There is no unwatch: without consent the dropdown still gets ads, contextual ones, so the watch stays.
 
 	// ---- Startup and consent changes ----------------------------------------------------------------------------------
 

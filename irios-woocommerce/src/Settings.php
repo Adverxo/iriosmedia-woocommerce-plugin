@@ -78,7 +78,13 @@ final class Settings {
 	);
 
 	/** @var array<string,string> */
+	/** The settings of this request; the option does not change while a page is being built. */
+	private static ?self $loaded = null;
+
 	private array $values;
+	/** Decoded and checked once: both are read several times while building a page. */
+	private ?array $banners = null;
+	private ?array $slots = null;
 
 	/**
 	 * @param array<string,mixed> $values
@@ -91,9 +97,21 @@ final class Settings {
 		}
 	}
 
+	/**
+	 * The store's settings. Kept for the rest of the request: they are read from a dozen places while a page is
+	 * built, and each read used to decode and check the JSON of the tables again.
+	 */
 	public static function load(): self {
-		$stored = get_option( self::OPTION, array() );
-		return new self( is_array( $stored ) ? $stored : array() );
+		if ( null === self::$loaded ) {
+			$stored       = get_option( self::OPTION, array() );
+			self::$loaded = new self( is_array( $stored ) ? $stored : array() );
+		}
+		return self::$loaded;
+	}
+
+	/** Forget what was loaded, so the next read sees what was just saved. */
+	public static function forget(): void {
+		self::$loaded = null;
 	}
 
 	/** @return array<string,string> */
@@ -135,8 +153,11 @@ final class Settings {
 	 * @return array<int,array{tag:string,format:string,type:string,device:string,id:int,auth:string,position:string}>
 	 */
 	public function banners(): array {
-		$rows = json_decode( $this->values['banners'], true );
-		return is_array( $rows ) ? self::sanitize_banners( $rows )['banners'] : array();
+		if ( null === $this->banners ) {
+			$rows          = json_decode( $this->values['banners'], true );
+			$this->banners = is_array( $rows ) ? self::sanitize_banners( $rows )['banners'] : array();
+		}
+		return $this->banners;
 	}
 
 	/** Banner by its tag ([irios_banner tag="portada"]), case-insensitive; null if it does not exist. */
@@ -311,10 +332,14 @@ final class Settings {
 	 * @return array<int,array{position:int,id:int,auth:string}>
 	 */
 	public function sponsored_slots(): array {
+		if ( null !== $this->slots ) {
+			return $this->slots;
+		}
 		$rows  = json_decode( $this->values['sponsored_slots'], true );
 		$slots = is_array( $rows ) ? self::sanitize_sponsored_slots( $rows )['slots'] : array();
 		if ( '' !== $this->values['sponsored_slots'] || null === $this->search_ad_unit() || '' === $this->search_ad_unit_auth() ) {
-			return $slots;
+			$this->slots = $slots;
+			return $this->slots;
 		}
 		$legacy = array();
 		for ( $position = 1; $position <= $this->max_ads(); $position++ ) {
@@ -324,7 +349,8 @@ final class Settings {
 				'auth'     => $this->search_ad_unit_auth(),
 			);
 		}
-		return $legacy;
+		$this->slots = $legacy;
+		return $this->slots;
 	}
 
 	/**
