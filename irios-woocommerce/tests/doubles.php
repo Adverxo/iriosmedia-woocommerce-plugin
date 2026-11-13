@@ -21,6 +21,31 @@ class WP_REST_Response {
 	}
 }
 
+class WP_REST_Request implements ArrayAccess {
+	public function __construct( private array $params = array() ) {}
+
+	public function get_param( string $name ) {
+		return $this->params[ $name ] ?? null;
+	}
+
+	public function offsetExists( $offset ): bool {
+		return isset( $this->params[ $offset ] );
+	}
+
+	#[\ReturnTypeWillChange]
+	public function offsetGet( $offset ) {
+		return $this->params[ $offset ] ?? null;
+	}
+
+	public function offsetSet( $offset, $value ): void {
+		$this->params[ $offset ] = $value;
+	}
+
+	public function offsetUnset( $offset ): void {
+		unset( $this->params[ $offset ] );
+	}
+}
+
 class WC_Product {
 	public function __construct( private int $id, private float $price = 10.0, private string $type = 'simple' ) {}
 
@@ -34,6 +59,38 @@ class WC_Product {
 
 	public function is_type( string $type ): bool {
 		return $type === $this->type;
+	}
+
+	public function get_status(): string {
+		return 'publish';
+	}
+
+	public function is_visible(): bool {
+		return true;
+	}
+
+	public function get_name(): string {
+		return 'Product ' . $this->id;
+	}
+
+	public function get_permalink(): string {
+		return 'https://shop.test/product/p' . $this->id . '/';
+	}
+
+	public function get_image_id(): int {
+		return 0;
+	}
+
+	public function get_short_description(): string {
+		return '';
+	}
+
+	public function get_date_created() {
+		return null;
+	}
+
+	public function get_price_html(): string {
+		return '';
 	}
 }
 

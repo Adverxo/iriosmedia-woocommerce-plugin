@@ -141,22 +141,22 @@ final class Feed {
 	}
 
 	public static function customers( \WP_REST_Request $request ): \WP_REST_Response {
-		$ids      = self::consented_customer_ids();
 		$per_page = (int) $request['per_page'];
-		$slice    = array_slice( $ids, ( (int) $request['page'] - 1 ) * $per_page, $per_page );
+		$page     = (int) $request['page'];
+		$total    = self::consented_customer_total();
 		$data     = array();
-		foreach ( $slice as $id ) {
+		foreach ( self::consented_customer_ids( $page, $per_page ) as $id ) {
 			$customer = self::customer_data( $id );
 			if ( null !== $customer ) {
 				$data[] = $customer;
 			}
 		}
-		return self::page( $data, count( $ids ), (int) ceil( count( $ids ) / $per_page ) );
+		return self::page( $data, $total, (int) ceil( $total / $per_page ) );
 	}
 
 	public static function customer( \WP_REST_Request $request ) {
 		$id       = (int) $request['id'];
-		$customer = in_array( $id, self::consented_customer_ids(), true ) ? self::customer_data( $id ) : null;
+		$customer = self::has_consented_order( $id ) ? self::customer_data( $id ) : null;
 		if ( null === $customer ) {
 			return new \WP_Error( 'irios_not_found', 'Customer not found or without an order placed with consent.', array( 'status' => 404 ) );
 		}
@@ -243,26 +243,66 @@ final class Feed {
 		);
 	}
 
-	/** @return int[] registered customers with at least one order placed with consent, by ID */
-	private static function consented_customer_ids(): array {
-		$orders = wc_get_orders(
-			array(
-				'type'       => 'shop_order',
-				'limit'      => -1,
-				'return'     => 'objects',
-				'meta_key'   => Orders::CONSENT_META, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-				'meta_value' => 'yes', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-			)
-		);
-		$ids = array();
-		foreach ( $orders as $order ) {
-			if ( $order instanceof \WC_Order && $order->get_customer_id() > 0 ) {
-				$ids[ (int) $order->get_customer_id() ] = true;
-			}
+	/**
+	 * Registered customers with at least one order placed with consent, by ID, one page at a time.
+	 *
+	 * Straight SQL: loading the orders to read their customer would mean every order of the store in memory on each
+	 * call. Works with both order storages (HPOS and the older posts table).
+	 *
+	 * @return int[]
+	 */
+	private static function consented_customer_ids( int $page, int $per_page ): array {
+		global $wpdb;
+		$offset = max( 0, ( $page - 1 ) * $per_page );
+		$sql    = self::consented_customers_sql( 'DISTINCT customer' ) . ' ORDER BY customer ASC LIMIT %d OFFSET %d';
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery
+		$ids = $wpdb->get_col( $wpdb->prepare( $sql, Orders::CONSENT_META, 'yes', $per_page, $offset ) );
+		return array_map( 'intval', (array) $ids );
+	}
+
+	/** How many registered customers have an order placed with consent. */
+	private static function consented_customer_total(): int {
+		global $wpdb;
+		$sql = 'SELECT COUNT(*) FROM (' . self::consented_customers_sql( 'DISTINCT customer' ) . ') AS irios_customers';
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery
+		return (int) $wpdb->get_var( $wpdb->prepare( $sql, Orders::CONSENT_META, 'yes' ) );
+	}
+
+	/** Has this customer an order placed with consent? One row, without listing them all. */
+	private static function has_consented_order( int $customer_id ): bool {
+		global $wpdb;
+		if ( $customer_id <= 0 ) {
+			return false;
 		}
-		$ids = array_keys( $ids );
-		sort( $ids );
-		return $ids;
+		$sql = self::consented_customers_sql( 'customer' ) . ' AND customer = %d LIMIT 1';
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery
+		return null !== $wpdb->get_var( $wpdb->prepare( $sql, Orders::CONSENT_META, 'yes', $customer_id ) );
+	}
+
+	/**
+	 * SELECT over the orders placed with consent by a registered customer, with the consent meta key and value as the
+	 * first two placeholders. The caller adds its own ORDER BY, LIMIT or condition on `customer`.
+	 */
+	private static function consented_customers_sql( string $select ): string {
+		global $wpdb;
+		$statuses = "'" . implode( "','", array_map( static fn( string $s ): string => 'wc-' . $s, self::PAID ) ) . "'";
+		if ( self::hpos() ) {
+			return "SELECT {$select} FROM (SELECT o.customer_id AS customer FROM {$wpdb->prefix}wc_orders o"
+				. " INNER JOIN {$wpdb->prefix}wc_orders_meta m ON m.order_id = o.id"
+				. " WHERE o.type = 'shop_order' AND o.status IN ({$statuses}) AND o.customer_id > 0"
+				. ' AND m.meta_key = %s AND m.meta_value = %s) AS irios_consented WHERE 1 = 1';
+		}
+		return "SELECT {$select} FROM (SELECT CAST(u.meta_value AS UNSIGNED) AS customer FROM {$wpdb->posts} p"
+			. " INNER JOIN {$wpdb->postmeta} m ON m.post_id = p.ID AND m.meta_key = %s AND m.meta_value = %s"
+			. " INNER JOIN {$wpdb->postmeta} u ON u.post_id = p.ID AND u.meta_key = '_customer_user'"
+			. " WHERE p.post_type = 'shop_order' AND p.post_status IN ({$statuses})"
+			. ' AND CAST(u.meta_value AS UNSIGNED) > 0) AS irios_consented WHERE 1 = 1';
+	}
+
+	/** Does the store keep its orders in WooCommerce's own tables (HPOS) instead of the posts table? */
+	private static function hpos(): bool {
+		return class_exists( \Automattic\WooCommerce\Utilities\OrderUtil::class )
+			&& \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled();
 	}
 
 	/**

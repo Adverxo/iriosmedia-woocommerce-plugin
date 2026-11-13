@@ -2,6 +2,19 @@
 
 Changes in each version of IRIOS Media for WooCommerce. Download any version from the [releases](../../releases).
 
+## 1.1.1 - 2026-11-13
+
+### Fixed
+
+- The visitor's own data is served only to pages of the store itself: `/context` and `/cards` now refuse a request
+  made from another site. WordPress answers REST requests with credentials, so until now a third-party page could read
+  the visitor's cart or make it lose the cart events waiting to be sent.
+- The `/cards` diagnostics (`?irios_debug=1`) are only for whoever can configure the store: they used to give file
+  names and line numbers to anyone.
+- `/customers` no longer loads every order of the store into memory on each call: it asks the database for the page it
+  needs. On a store with many orders the call could run out of memory or time. It also counts only customers with a
+  paid order, as `/orders` already did.
+
 ## 1.1.0 - 2026-11-13
 
 ### Added

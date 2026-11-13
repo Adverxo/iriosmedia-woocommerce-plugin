@@ -18,7 +18,7 @@ final class Rest {
 			array(
 				'methods'             => 'GET',
 				'callback'            => array( self::class, 'context' ),
-				'permission_callback' => '__return_true',
+				'permission_callback' => array( self::class, 'from_the_store' ),
 			)
 		);
 		register_rest_route(
@@ -27,8 +27,13 @@ final class Rest {
 			array(
 				'methods'             => 'GET',
 				'callback'            => array( self::class, 'cards' ),
-				'permission_callback' => '__return_true',
+				'permission_callback' => array( self::class, 'from_the_store' ),
 				'args'                => array(
+					'irios_debug' => array( // diagnostics, only for whoever can configure the store
+						'type'    => 'string',
+						'enum'    => array( '', '1' ),
+						'default' => '',
+					),
 					'ids'    => array(
 						'type'     => 'string',
 						'required' => true,
@@ -48,15 +53,39 @@ final class Rest {
 		);
 	}
 
+	/**
+	 * Only from a page of this store. These routes answer for the visitor the request comes from —`/context` hands
+	 * over the pending cart events and clears them— so another site must not be able to call them: WordPress answers
+	 * REST requests with `Access-Control-Allow-Credentials: true`, so without this a third-party page could read the
+	 * visitor's cart or make it lose its events.
+	 *
+	 * The browser states it in `Sec-Fetch-Site`; where it is missing (an old browser), the `Referer` host is used, and
+	 * a request without either is allowed, as it cannot come from another site's page.
+	 */
+	public static function from_the_store(): bool {
+		$site = isset( $_SERVER['HTTP_SEC_FETCH_SITE'] ) ? strtolower( sanitize_text_field( wp_unslash( $_SERVER['HTTP_SEC_FETCH_SITE'] ) ) ) : '';
+		if ( '' !== $site ) {
+			return in_array( $site, array( 'same-origin', 'same-site', 'none' ), true );
+		}
+		$referer = isset( $_SERVER['HTTP_REFERER'] ) ? esc_url_raw( wp_unslash( $_SERVER['HTTP_REFERER'] ) ) : '';
+		if ( '' === $referer ) {
+			return true;
+		}
+		$from = wp_parse_url( $referer, PHP_URL_HOST );
+		$home = wp_parse_url( home_url(), PHP_URL_HOST );
+		return is_string( $from ) && is_string( $home ) && strtolower( $from ) === strtolower( $home );
+	}
+
 	public static function cards( \WP_REST_Request $request ): \WP_REST_Response {
-		$ids = Cards::parse_ids( (string) $request->get_param( 'ids' ), max( 1, count( Settings::load()->sponsored_slots() ) ) );
-		if ( '1' === (string) $request->get_param( 'irios_debug' ) ) {
+		$ids   = Cards::parse_ids( (string) $request->get_param( 'ids' ), max( 1, count( Settings::load()->sponsored_slots() ) ) );
+		$debug = '1' === (string) $request->get_param( 'irios_debug' ) && current_user_can( 'manage_woocommerce' );
+		if ( $debug ) {
 			self::diagnose_abort();
 		}
 		$cards = Cards::render( $ids, (string) $request->get_param( 'layout' ), (string) $request->get_param( 'imageSize' ) );
 		Cards::$step = 'done';
 		$body        = array( 'cards' => $cards );
-		if ( '1' === (string) $request->get_param( 'irios_debug' ) ) {
+		if ( $debug ) {
 			$body['irios_debug'] = array( 'errors' => Cards::$errors ); // fields that failed and why
 		}
 		$response = new \WP_REST_Response( $body );
