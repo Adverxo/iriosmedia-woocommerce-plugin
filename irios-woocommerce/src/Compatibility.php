@@ -64,7 +64,7 @@ final class Compatibility {
 					self::theme_label()
 				)
 			),
-			esc_html__( 'This theme is not among the themes tested with Irios Media, so some ads (Sponsored Products in search or in the live search, or banners in automatic positions) may not be shown or may not be placed correctly. Please contact Irios support.', 'irios-woocommerce' )
+			esc_html__( 'This theme is not among the themes tested with IRIOS Media, so some ads (Sponsored Products in search or in the live search, or banners in automatic positions) may not be shown or may not be placed correctly. Please contact Irios support.', 'irios-woocommerce' )
 		);
 	}
 }

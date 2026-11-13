@@ -110,7 +110,7 @@ final class Updates {
 		return esc_html(
 			sprintf(
 				/* translators: 1: new version, 2: installed version */
-				__( 'Irios for WooCommerce %1$s is available (installed: %2$s).', 'irios-woocommerce' ),
+				__( 'IRIOS Media for WooCommerce %1$s is available (installed: %2$s).', 'irios-woocommerce' ),
 				$release['version'],
 				IRIOS_WC_VERSION
 			)

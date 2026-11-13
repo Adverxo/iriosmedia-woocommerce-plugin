@@ -88,6 +88,9 @@ final class Assets {
 			'productBase'     => self::product_base(),
 			'liveSearchAds'   => self::live_search_ads( $settings ),
 			'bannersEnabled'  => $settings->banners_enabled(),
+			'gridAfter'       => $settings->display_in_grid_after(),
+			// Push notifications: the ad unit, when to ask and the service worker served at the site root (Push::PATH)
+			'push'            => self::push( $settings ),
 			'adInfo'          => self::ad_info_texts(),
 			// Active theme (and its parent), for the debug-mode compatibility warnings
 			'theme'           => Compatibility::theme_label(),
@@ -106,10 +109,11 @@ final class Assets {
 			'title'       => __( 'About this ad', 'irios-woocommerce' ),
 			'why'         => __( 'Why am I seeing this ad?', 'irios-woocommerce' ),
 			'because'     => __( 'You are seeing this ad because of:', 'irios-woocommerce' ),
-			'noTargeting' => __( 'The ad space of the store where it appears: it does not use information about you.', 'irios-woocommerce' ),
+			'noTargeting' => __( 'No information about you was used. It is shown to everyone who visits this part of the store.', 'irios-woocommerce' ),
 			'reasons'     => array(
 				'SEARCH'              => __( 'The search terms you have used.', 'irios-woocommerce' ),
 				'STORE_CATEGORY'      => __( 'The content or products you are viewing on this page.', 'irios-woocommerce' ),
+				'PAGE_TYPE'           => __( 'The section of the store you are in (home page, search, product page…).', 'irios-woocommerce' ),
 				'LOCATION'            => __( 'Your approximate location (country).', 'irios-woocommerce' ),
 				'LANGUAGE'            => __( 'Your language.', 'irios-woocommerce' ),
 				'DEVICE'              => __( 'Your device, operating system, browser or carrier.', 'irios-woocommerce' ),
@@ -136,17 +140,36 @@ final class Assets {
 	}
 
 	/**
-	 * Sponsored Products in the theme's live search (results as you type): the same slots as the search page, each ad
-	 * at its position in the list. Null if ads are disabled or the language is not valid.
+	 * Sponsored Products in the theme's live search (results as you type): at most one ad, at the top of the list,
+	 * from the ad unit of the lowest search position (the IRIOS Media standard for the search bar). Null if ads are
+	 * disabled or the language is not valid.
 	 */
 	private static function live_search_ads( Settings $settings ): ?array {
 		$language = Settings::bcp47_language( determine_locale() );
-		if ( ! $settings->search_ads_enabled() || null === $language ) {
+		$slots    = $settings->sponsored_slots();
+		if ( ! $settings->search_ads_enabled() || null === $language || array() === $slots ) {
 			return null;
 		}
 		return array(
-			'units'    => $settings->sponsored_units(),
+			'units'    => array(
+				array(
+					'adUnit'    => $slots[0]['id'],
+					'auth'      => $slots[0]['auth'],
+					'positions' => array( 1 ),
+				),
+			),
 			'language' => $language,
 		);
+	}
+
+	/** @return array<string,mixed>|null */
+	private static function push( Settings $settings ): ?array {
+		$push = $settings->push();
+		if ( null === $push ) {
+			return null;
+		}
+		$push['serviceWorker'] = Push::url();
+		$push['scope']         = Push::scope();
+		return $push;
 	}
 }

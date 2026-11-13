@@ -1,16 +1,18 @@
-# Irios for WooCommerce
+# IRIOS Media for WooCommerce
 
 WordPress plugin that connects a WooCommerce store with **IRIOS Media**:
 
 - **Events and identity**: `page-view`, `category-view`, `search`, `product-view` (including the selected variation),
   `checkout-step`, `add-to-cart`, `remove-from-cart` and `cart-view`. The browser is identified by the IRIOS Media
-  cookie (`irs1P`), which is also stored in the order; for logged-in customers, also their id and their hashed email
-  and phone (SHA-256). Purchases are not sent by the plugin: IRIOS Media's synchronization service sends them from the
-  store's orders.
+  cookie (`irs1P`), which is also stored in the order with the consent answer; for logged-in customers, also their id
+  and their hashed email and phone (SHA-256). Purchases are not sent by the plugin: IRIOS Media's synchronization
+  service reads them, only with consent, through the plugin's own API (see below).
 - **Sponsored Products** (optional): product ads in the search results and in the theme's live search, rendered with
   the store's own product card and an ad label ("Sponsored").
-- **Banners** (optional): banners through a shortcode or at automatic positions (below the product listing of a
-  category and before the description on the product page).
+- **Display** (optional): image and video ads through a shortcode or at automatic positions (category: sidebar, inside
+  the grid, after the products; product page: before the description, before the related products), per device.
+- **Push Notifications** (optional): brand notifications for the shoppers who subscribe in their browser, asked after
+  a purchase or after a number of pages, only with consent.
 - **Ad transparency** (EU Digital Services Act, art. 26): an info button next to every ad label opens "About this
   ad", with why the ad is shown and on whose behalf it is shown and who paid for it.
 
@@ -18,6 +20,20 @@ WordPress plugin that connects a WooCommerce store with **IRIOS Media**:
 no identifiers, no IRIOS Media cookies and no events. With consent, events, identifiers and personalised ads as well.
 
 Requirements: WordPress 6.4+, PHP 8.1+ and WooCommerce 8.5+.
+
+**API for the IRIOS Media sync service.** Orders and customers are read through the plugin's API, which gives the
+shopper's identifiers already hashed in the store (SHA-256 of the normalized email and of the phone in E.164, the same
+rules as the storefront): names, emails, phones, addresses and IP addresses never leave WooCommerce.
+
+| Endpoint (`/wp-json/irios/v1/...`) | Returns |
+|---|---|
+| `orders?status=&modified_after=&created_after=&created_before=&page=&per_page=` | Paid orders (`processing`, `completed`): amounts, lines and whether there was consent. Only with consent: the hashed identifiers, the IRIOS browser ID and the billing country, state and postcode. |
+| `orders/<id>` | One order |
+| `customers?page=&per_page=`, `customers/<id>` | Registered customers with an order placed with consent: customer ID, hashed identifiers and billing country, state and postcode |
+
+It is authenticated with a WooCommerce REST API key with read access (WooCommerce → Settings → Advanced → REST API),
+over HTTPS. The sync service only uses WooCommerce's own API for the catalog, and only product webhooks: delete any
+order or customer webhook pointing to it, since WooCommerce sends the full order or customer in them.
 
 ## Installation
 
@@ -43,6 +59,24 @@ one of those admin pages is opened; no store data is sent. To turn the check off
 add_filter( 'irios_woocommerce_check_updates', '__return_false' );
 ```
 
+#### Updating from "Irios for WooCommerce"
+
+The first version of the plugin was called "Irios for WooCommerce" and lived in the `irios-for-woocommerce` folder.
+WordPress sees this one as a different plugin, so it does not replace it:
+
+1. **Plugins → Deactivate** "Irios for WooCommerce". Do not delete it yet, so it can be reactivated if needed.
+2. Upload and activate `irios-woocommerce.zip` as above. The settings are shared, so they are already there: check
+   them in **WooCommerce → Settings → Integration → IRIOS Media**, as this version adds settings the old one did not
+   have (page types are sent on their own, Display placements and push notifications).
+3. Once it works, **Delete** the old plugin.
+
+While both are active only the old one runs, and the new one shows a notice asking to deactivate it. The old plugin's
+uninstall deletes the shared settings, but this one saves them and writes them back, so deleting it does not lose the
+configuration.
+
+Shoppers get a new IRIOS Media identifier: the old plugin used its own `_irios_uid` cookie, and this one uses the
+tracker's `irs1P`, the same as every other IRIOS Media integration.
+
 ### Uninstall
 
 **Plugins → Deactivate** and then **Delete**. Once deactivated it stops loading and sending anything; deleting it
@@ -51,11 +85,15 @@ dashboard does not respond, delete the `wp-content/plugins/irios-woocommerce` fo
 
 ## Settings
 
-**WooCommerce → Settings → Integration → Irios Media.** Nothing configured here is secret: it all reaches the browser.
+**WooCommerce → Settings → Integration → IRIOS Media.** Nothing configured here is secret: it all reaches the browser.
+The settings are in English, as in every IRIOS Media integration.
+
+**General**:
 
 | Setting | Description |
 |---|---|
-| Irios API domain | Domain of the store's network, without `https://` or path (e.g. `example.iriosmedia.online`) |
+| Enable IRIOS Media | Main switch (on by default; nothing is loaded until the domain and the Store ID are set) |
+| IRIOS Media domain | Domain of the store's network, without `https://` or path (e.g. `example.iriosmedia.online`) |
 | Store ID | Numeric id of the store in IRIOS Media |
 | Consent | How the plugin knows whether the visitor accepted marketing cookies: **WP Consent API** (with a compatible banner), **Asesor de Cookies RGPD** (reads its `cdp_cookie_consent` cookie) or **Always** (the store handles consent another way) |
 
@@ -64,11 +102,11 @@ dashboard does not respond, delete the `wp-content/plugins/irios-woocommerce` fo
 | Setting | Description |
 |---|---|
 | Enable | Shows ads in the search results and in the live search |
-| Positions | One row per ad: **Position**, **Ad unit (id)** and **Auth** (see below) |
-| Ad label | Text of the sponsored cards ("Sponsored" by default, translated to the store language); do not leave it empty |
+| Search results positions | One row per ad: **Position**, **Ad unit ID** and **Auth** (see below) |
+| Sponsored label | Text of the sponsored cards ("Sponsored" by default, translated to the store language); do not leave it empty |
 | Single-result search | Keeps the results page instead of redirecting to the product, so ads can be shown |
 
-**Positions**: each row is a slot in the results grid. Position 1 is top left and positions follow reading order (left
+**Search results positions**: each row is a place in the results grid. Position 1 is top left and positions follow reading order (left
 to right, row by row); with 4 columns, position 5 is the first of the second row. An ad unit can take several
 positions (e.g. 1001 at 1 and 2, and 1002 at 6):
 
@@ -77,23 +115,46 @@ positions (e.g. 1001 at 1 and 2, and 1002 at 6):
 - A product that already won in another ad unit is not repeated. The organic result for the same product is hidden.
 - Positions count the visible results; if the page has fewer, the ad goes at the end. In a search with no results,
   the sponsored products are shown above the "no products found" notice.
-- The live search uses the same positions, counted as rows of the dropdown.
+- The live search shows at most one ad, at the top of the dropdown: the one of the ad unit of the lowest position.
 
-**Banners** (the table appears once enabled): one row per banner with **Tag** (lowercase, digits, `-` and `_`;
-unique), **Ad unit (id)**, **Auth** and **Position**:
+**Display (Image and Video)** (the table appears once enabled): one row per placement with **Tag** (lowercase,
+digits, `-` and `_`; unique), **Format** (image or video, as the ad unit in IRIOS Media), **Device** (all, desktop
+from 768 px wide, or mobile: the same spot can have one row per device, with ad units of different sizes),
+**Ad unit ID**, **Auth** and **Position**:
 
-- **Manual (shortcode)**: shown wherever `[irios_banner tag="TAG"]` is placed (a page, a page-builder element, a block,
-  a widget or a category description).
-- **Category page: bottom**: below the product grid and its sorting and pagination controls, centred.
-- **Product page: middle**: before the product page tabs.
+- **Manual only**: shown wherever `[irios_display tag="TAG"]` is placed (a page, the home page, a page-builder
+  element, a block, a widget or a category description). `[irios_banner]`, its name in 1.0, still works.
+- **Category: sidebar**: at the top of the shop sidebar.
+- **Category: in grid**: inside the product grid, the full width of it, after the product set in
+  **Grid: after product** (6 by default).
+- **Category: bottom**: below the product grid and its sorting and pagination controls, centred.
+- **Product: description**: before the product page tabs.
+- **Product: related**: before the related products (or the upsells).
 
-Unchecking the box turns all banners off without touching the pages.
+Unchecking the box turns all display ads off without touching the pages.
+
+**Push Notifications** (the fields appear once enabled): the push **Ad unit ID** and its **Ad unit auth**, **When to ask for
+permission** (after a purchase, on the order received page, or after a **Number of pages** of the visit) and
+**Ask again after (days)** if the shopper did not answer (30 by default; 0: on every visit). The browser prompt is
+only shown with consent, at most once per visit. The plugin serves the service worker at the root of the site,
+`/irios-sw.js`: in IRIOS Media, the push ad unit must point to it. If consent is withdrawn, the subscription is
+cancelled.
+
+**Page type**: every ad request tells IRIOS Media the type of page it is shown on (`pageType`), which campaigns can
+target. The plugin sets it from the WooCommerce page: home (`HOMEPAGE`), product search (`SEARCH`), live search
+(`SEARCH_BAR`), category (`CATEGORY`, with its path), product (`PRODUCT_DETAIL`, with its deepest category), shop,
+tag, brand and attribute listings (`MERCHANDISING`), cart and checkout (`CHECKOUT`) and order received
+(`CONFIRMATION`). On other pages (WordPress pages, blog), a manual placement can set it with `page_type`, e.g.
+`[irios_display tag="promo" page_type="PROMOTIONS"]` (`HOMEPAGE`, `MERCHANDISING`, `CHECKOUT`, `CONFIRMATION`,
+`AI_ASSISTANT` or `PROMOTIONS`); without it, no ads are requested there. Nor on a category or product page without
+a category, which IRIOS Media requires. In IRIOS Media, the store must have those page types associated.
 
 ## Languages
 
-The settings page, the notices, the "About this ad" dialog and the default ad label follow the store language:
-English and Spanish are included; any other language shows the English texts. The ad label can also be set per store
-in the settings.
+The plugin is written in English, as every IRIOS Media integration, and follows the store language. Everything is
+translated into Spanish: the settings page, the admin notices and what shoppers see (the "About this ad" dialog and
+the default "Sponsored" label). Any other language shows the English texts. The sponsored label can also be set in
+the settings.
 
 ## Theme compatibility
 

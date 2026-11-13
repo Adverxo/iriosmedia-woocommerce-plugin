@@ -26,7 +26,7 @@ export const CONFIG = {
   productBase: "/product/",
   liveSearchAds: null,
   bannersEnabled: false,
-  adInfo: { button: "Information about this ad", title: "About this ad", reasons: {}, ok: "Got it" },
+  adInfo: { button: "Information about this ad", title: "About this ad", reasons: {}, ok: "Got it", name: "Advertiser name", payer: "Who paid for this ad", unknown: "Not available" },
   theme: "Storefront (storefront)",
 };
 

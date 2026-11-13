@@ -18,7 +18,6 @@ function search({ positions = [1], organic = [1, 2, 3], units, ...options } = {}
         units: units || [{ adUnit: UNIT, auth: "abc", positions }],
         searchQuery: "stick",
         language: "es-ES",
-        category: [],
         results: {},
         empty: false,
       },
@@ -78,6 +77,16 @@ describe("search ads", () => {
     expect(label.querySelector(".irios-ad-info")).not.toBeNull();
   });
 
+  it("«About this ad» names the brand as advertiser and the advertiser as who paid, when IRIOS Media gives both", async () => {
+    const ad = { ...winner(UNIT, 1, 7), brandName: "Farmacia Andalucia", advertiserName: "Andalucia Farmacia" };
+    const { document } = search({ winners: [ad] });
+    await settle();
+    document.querySelector(".irios-sponsored .irios-ad-info").click();
+    const items = [...document.querySelectorAll('.irios-ad-info-overlay [role="dialog"] li')].map((li) => li.textContent);
+    expect(items).toContain("Advertiser name: Farmacia Andalucia");
+    expect(items).toContain("Who paid for this ad: Andalucia Farmacia");
+  });
+
   it("tracks load and view on the card and clicks only on links to the product, never on add to cart", async () => {
     const { log } = search({ winners: [winner(UNIT, 1, 7)] });
     await settle();
@@ -97,6 +106,7 @@ describe("search ads", () => {
     await settle();
     expect(log.auctions).toHaveLength(1);
     expect(log.auctions[0]).toMatchObject({
+      pageType: "SEARCH",
       searchQuery: "stick",
       language: "es-ES",
       adUnits: [
@@ -104,6 +114,8 @@ describe("search ads", () => {
         { id: 2, auth: "b", type: "product", maxAds: 1 },
       ],
     });
+    // IRIOS ignores the category on search pages: it is not sent
+    expect(log.auctions[0]).not.toHaveProperty("category");
   });
 
   it("with consent the auction and the tracking are personalised", async () => {
@@ -131,6 +143,39 @@ describe("search ads", () => {
     await settle();
     expect(visibleGrid(document)).toEqual(["1", "2", "3"]);
     expect(document.documentElement.classList.contains("irios-ads-pending")).toBe(false);
+  });
+
+  it("results that are not product cards (blog-style theme): the ad's image takes the shape the theme renders, not its width/height attributes", async () => {
+    const ORIGIN = "https://shop.test";
+    // Like a theme that prints square thumbnails (145×145 attributes) in a 290×145 box with object-fit: contain.
+    const post = (id) =>
+      `<div class="list-col-item"><div class="post-thumb"><a href="${ORIGIN}/product/p${id}/">` +
+      `<img width="145" height="145" src="${ORIGIN}/p${id}.jpg" class="attachment-270x145 size-270x145" style="object-fit: contain"></a></div>` +
+      `<h3 class="post-title"><a href="${ORIGIN}/product/p${id}/">P${id}</a></h3></div>`;
+    const results = Object.fromEntries([1, 2, 3].map((id) => [`${ORIGIN}/product/p${id}/`, id]));
+    store = storefront({
+      body: `<div class="results">${[1, 2, 3].map(post).join("")}</div>`,
+      page: {
+        type: "search",
+        value: "stick",
+        ads: { units: [{ adUnit: UNIT, auth: "abc", positions: [1] }], searchQuery: "stick", language: "es-ES", results, empty: false },
+      },
+      winners: [winner(UNIT, 1, 7)],
+      before: (w) => {
+        Object.defineProperty(w.HTMLImageElement.prototype, "offsetWidth", { get: () => 290 });
+        Object.defineProperty(w.HTMLImageElement.prototype, "offsetHeight", { get: () => 145 });
+        const fetch = w.fetch;
+        w.fetch = async (url, options) =>
+          String(url).includes("/irios/v1/cards")
+            ? { ok: true, status: 200, headers: new Map(), json: async () => ({ cards: [{ id: "7", productId: 7, link: `${ORIGIN}/product/p7/`, title: "P7", image: `${ORIGIN}/p7.jpg` }] }) }
+            : fetch(url, options);
+      },
+    });
+    await settle();
+    const img = store.document.querySelector(".irios-sponsored img");
+    expect(img.getAttribute("src")).toBe(`${ORIGIN}/p7.jpg`);
+    expect(img.style.aspectRatio).toBe("290 / 145");
+    expect(img.style.objectFit).toBe("contain");
   });
 
   it("without winners nothing changes and no cards are asked for", async () => {

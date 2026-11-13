@@ -15,22 +15,58 @@ final class Settings {
 	/** "Asesor de Cookies RGPD" banner (slug asesor-cookies-para-la-ley-en-espana): does not use the WP Consent API. */
 	public const CONSENT_ASESOR_COOKIES = 'asesor_cookies';
 
-	/** Automatic positions for a banner (besides the shortcode, which always works). */
+	/**
+	 * Automatic positions of a Display placement: the common catalog of every IRIOS Media integration. Any placement
+	 * can also be placed by hand with the shortcode, whatever its position.
+	 */
 	public const POSITION_NONE                       = '';
+	public const POSITION_CATEGORY_SIDEBAR           = 'category_sidebar';
+	public const POSITION_CATEGORY_IN_GRID           = 'category_in_grid';
 	public const POSITION_CATEGORY_AFTER_PRODUCTS    = 'category_after_products';
 	public const POSITION_PRODUCT_BEFORE_DESCRIPTION = 'product_before_description';
+	public const POSITION_PRODUCT_BEFORE_RELATED     = 'product_before_related';
 	public const POSITIONS                           = array(
 		self::POSITION_NONE,
+		self::POSITION_CATEGORY_SIDEBAR,
+		self::POSITION_CATEGORY_IN_GRID,
 		self::POSITION_CATEGORY_AFTER_PRODUCTS,
 		self::POSITION_PRODUCT_BEFORE_DESCRIPTION,
+		self::POSITION_PRODUCT_BEFORE_RELATED,
 	);
+	public const CATEGORY_POSITIONS = array( self::POSITION_CATEGORY_SIDEBAR, self::POSITION_CATEGORY_IN_GRID, self::POSITION_CATEGORY_AFTER_PRODUCTS );
+	public const PRODUCT_POSITIONS  = array( self::POSITION_PRODUCT_BEFORE_DESCRIPTION, self::POSITION_PRODUCT_BEFORE_RELATED );
+
+	/**
+	 * Format of a Display placement and the IRIOS ad unit type it is requested as: the IRIOS loader renders an image
+	 * banner or a video player depending on it. It must match the ad unit's format in IRIOS Media.
+	 */
+	public const FORMAT_AD_UNIT_TYPE = array(
+		'image' => 'banner',
+		'video' => 'video',
+	);
+	/** Device a Display placement is shown on (desktop: from 768 px wide). */
+	public const DEVICES = array( 'all', 'desktop', 'mobile' );
+
+	/** When the push permission prompt may be shown (always with consent). */
+	public const PUSH_AFTER_PURCHASE = 'after_purchase';
+	public const PUSH_AFTER_PAGES    = 'after_pages';
 
 	private const DEFAULTS = array(
+		// "Enable IRIOS Media": on by default so that 1.0 installs (which had no such switch) keep working; nothing is
+		// loaded anyway until the domain and the Store ID are set
+		'enabled'                  => 'yes',
 		'js_domain'                => '',
 		'store_id'                 => '',
 		'sponsored_enabled'        => 'no',
 		'banners_enabled'          => 'no',
-		'banners'                  => '[]',
+		'banners'                  => '[]', // Display placements (the option keeps its 1.0 name)
+		'display_in_grid_after'    => '6',
+		'push_enabled'             => 'no',
+		'push_ad_unit'             => '',
+		'push_auth'                => '',
+		'push_trigger'             => self::PUSH_AFTER_PURCHASE,
+		'push_after_pages'         => '2',
+		'push_repeat_days'         => '30',
 		'sponsored_slots'          => '', // JSON; empty = never saved (the legacy configuration is used)
 		// Legacy configuration (a single ad unit at the top): still read if no slots have been set up.
 		'search_ad_unit'           => '',
@@ -65,9 +101,14 @@ final class Settings {
 		return self::DEFAULTS;
 	}
 
-	/** Without a JS domain or a storeId nothing is loaded. */
+	/** "Enable IRIOS Media" switch (General). */
+	public function enabled(): bool {
+		return 'no' !== $this->values['enabled'];
+	}
+
+	/** "Enable IRIOS Media" on, with a domain and a Store ID: otherwise nothing is loaded. */
 	public function is_configured(): bool {
-		return '' !== $this->js_domain() && null !== $this->store_id();
+		return 'no' !== $this->values['enabled'] && '' !== $this->js_domain() && null !== $this->store_id();
 	}
 
 	public function js_domain(): string {
@@ -89,9 +130,9 @@ final class Settings {
 	}
 
 	/**
-	 * Banners set up in the settings (tag → ad unit), stored as JSON.
+	 * Display placements set up in the settings (tag → ad unit), stored as JSON in the `banners` option.
 	 *
-	 * @return array<int,array{tag:string,id:int,auth:string,position:string}>
+	 * @return array<int,array{tag:string,format:string,type:string,device:string,id:int,auth:string,position:string}>
 	 */
 	public function banners(): array {
 		$rows = json_decode( $this->values['banners'], true );
@@ -129,11 +170,12 @@ final class Settings {
 	}
 
 	/**
-	 * Validates the banner rows from the settings screen: short (a-z, 0-9, - and _) unique tag, required numeric id and
-	 * auth, and optional automatic position. Empty rows are ignored; invalid ones are dropped with their error.
+	 * Validates the Display rows from the settings screen: short (a-z, 0-9, - and _) unique tag, format (image or
+	 * video; image when missing, as rows saved by 1.0), device (all when missing), required numeric id and auth, and
+	 * optional automatic position. Empty rows are ignored; invalid ones are dropped with their error.
 	 *
 	 * @param array<int,array<string,mixed>> $rows
-	 * @return array{banners:array<int,array{tag:string,id:int,auth:string,position:string}>,errors:string[]}
+	 * @return array{banners:array<int,array{tag:string,format:string,type:string,device:string,id:int,auth:string,position:string}>,errors:string[]}
 	 */
 	public static function sanitize_banners( array $rows ): array {
 		$banners = array();
@@ -142,7 +184,11 @@ final class Settings {
 			$tag  = strtolower( trim( (string) ( $row['tag'] ?? '' ) ) );
 			$id   = trim( (string) ( $row['id'] ?? '' ) );
 			$auth = trim( (string) ( $row['auth'] ?? '' ) );
-			$pos  = trim( (string) ( $row['position'] ?? '' ) );
+			$pos    = trim( (string) ( $row['position'] ?? '' ) );
+			$format = trim( (string) ( $row['format'] ?? '' ) );
+			$format = '' === $format ? 'image' : $format;
+			$device = trim( (string) ( $row['device'] ?? '' ) );
+			$device = '' === $device ? 'all' : $device;
 			if ( '' === $tag && '' === $id && '' === $auth ) {
 				continue;
 			}
@@ -159,6 +205,24 @@ final class Settings {
 					/* translators: %s: banner tag */
 					__( 'Duplicate tag "%s"', 'irios-woocommerce' ),
 					$tag
+				);
+				continue;
+			}
+			if ( ! isset( self::FORMAT_AD_UNIT_TYPE[ $format ] ) ) {
+				$errors[] = sprintf(
+					/* translators: 1: placement tag, 2: format */
+					__( 'Placement "%1$s": unknown format "%2$s"', 'irios-woocommerce' ),
+					$tag,
+					$format
+				);
+				continue;
+			}
+			if ( ! in_array( $device, self::DEVICES, true ) ) {
+				$errors[] = sprintf(
+					/* translators: 1: placement tag, 2: device */
+					__( 'Placement "%1$s": unknown device "%2$s"', 'irios-woocommerce' ),
+					$tag,
+					$device
 				);
 				continue;
 			}
@@ -181,6 +245,9 @@ final class Settings {
 			}
 			$banners[ $tag ] = array(
 				'tag'      => $tag,
+				'format'   => $format,
+				'type'     => self::FORMAT_AD_UNIT_TYPE[ $format ],
+				'device'   => $device,
 				'id'       => (int) $id,
 				'auth'     => $auth,
 				'position' => $pos,
@@ -192,7 +259,32 @@ final class Settings {
 		);
 	}
 
-	/** "Enable" checkbox of the Banners section: without it, [irios_banner] shortcodes render nothing. */
+	/** Product of the category listing after which the "inside the grid" placements go (the full width of the grid). */
+	public function display_in_grid_after(): int {
+		return self::is_positive_int( $this->values['display_in_grid_after'] ) ? (int) $this->values['display_in_grid_after'] : 6;
+	}
+
+	/**
+	 * Push notifications: the ad unit, when the browser permission prompt may be shown (always with consent: after a
+	 * purchase, on the order received page, or after a number of pages of the visit) and, if the shopper did not
+	 * answer, after how many days it may be shown again (0: on every visit). Null when off or incomplete.
+	 *
+	 * @return array{id:int,auth:string,trigger:string,afterPages:int,repeatDays:int}|null
+	 */
+	public function push(): ?array {
+		if ( 'yes' !== $this->values['push_enabled'] || ! self::is_positive_int( $this->values['push_ad_unit'] ) || '' === $this->values['push_auth'] ) {
+			return null;
+		}
+		return array(
+			'id'         => (int) $this->values['push_ad_unit'],
+			'auth'       => $this->values['push_auth'],
+			'trigger'    => self::PUSH_AFTER_PAGES === $this->values['push_trigger'] ? self::PUSH_AFTER_PAGES : self::PUSH_AFTER_PURCHASE,
+			'afterPages' => self::is_positive_int( $this->values['push_after_pages'] ) ? (int) $this->values['push_after_pages'] : 2,
+			'repeatDays' => ctype_digit( $this->values['push_repeat_days'] ) ? (int) $this->values['push_repeat_days'] : 30,
+		);
+	}
+
+	/** "Enable" checkbox of the Display section: without it, [irios_display] shortcodes render nothing. */
 	public function banners_enabled(): bool {
 		return 'yes' === $this->values['banners_enabled'];
 	}

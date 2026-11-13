@@ -36,6 +36,62 @@ final class Events {
 
 	/** Page data for the JS (no visitor data). */
 	public static function page_data( Settings $settings ): array {
+		$data = self::page_events_data( $settings );
+		// Where the ads are requested: IRIOS pageType and, on category and product pages, the category path
+		$context = self::page_context();
+		if ( '' !== $context['pageType'] ) {
+			$data['pageType'] = $context['pageType'];
+		}
+		if ( array() !== $context['category'] ) {
+			$data['category'] = $context['category'];
+		}
+		return $data;
+	}
+
+	/**
+	 * IRIOS page type (pageType of every ad request, except push) of the page being viewed, and its category path when
+	 * the type needs it (category and product pages). '' on pages that match no type (blog, other WordPress pages): the
+	 * JS then uses the [irios_banner page_type="…"] of the banner, and without it requests no ads. Also '' for a category
+	 * or product page without a category: IRIOS requires it, and the page is not changed to another type.
+	 *
+	 * @return array{pageType: string, category: string[]}
+	 */
+	public static function page_context(): array {
+		$type     = '';
+		$category = array();
+		if ( is_search() && 'product' === get_query_var( 'post_type' ) ) {
+			$type = 'SEARCH';
+		} elseif ( function_exists( 'is_product_category' ) && is_product_category() ) {
+			$type = 'CATEGORY';
+			$term = get_queried_object();
+			if ( $term instanceof \WP_Term ) {
+				$category = Catalog::category_names( $term );
+			}
+		} elseif ( function_exists( 'is_product' ) && is_product() ) {
+			$type     = 'PRODUCT_DETAIL';
+			$category = Catalog::product_category_names( get_queried_object_id() );
+		} elseif ( is_front_page() ) {
+			$type = 'HOMEPAGE';
+		} elseif ( function_exists( 'is_order_received_page' ) && is_order_received_page() ) {
+			$type = 'CONFIRMATION';
+		} elseif ( ( function_exists( 'is_cart' ) && is_cart() ) || ( function_exists( 'is_checkout' ) && is_checkout() ) ) {
+			$type = 'CHECKOUT';
+		} elseif ( ( function_exists( 'is_shop' ) && is_shop() ) || ( function_exists( 'is_product_taxonomy' ) && is_product_taxonomy() ) ) {
+			// Shop page and product listings that are not a category of the tree (tags, brands, attributes): curated
+			// selections and brand pages, IRIOS's definition of MERCHANDISING
+			$type = 'MERCHANDISING';
+		}
+		if ( in_array( $type, array( 'CATEGORY', 'PRODUCT_DETAIL' ), true ) && array() === $category ) {
+			$type = ''; // IRIOS rejects these page types without a category: no ads
+		}
+		return array(
+			'pageType' => $type,
+			'category' => $category,
+		);
+	}
+
+	/** Page data for the page events (page-view, category-view, search, product-view, checkout-step). */
+	private static function page_events_data( Settings $settings ): array {
 		$data = array( 'type' => 'page' );
 
 		if ( function_exists( 'is_product' ) && is_product() ) {
@@ -78,28 +134,20 @@ final class Events {
 	}
 
 	/**
-	 * Sponsored Products in search: only with a search term and configured slots (each ad unit with its positions). The
-	 * language is that of the page being viewed in WordPress (with WPML or Polylang, that of the store version the
-	 * visitor is searching in).
+	 * Sponsored Products in search: only with a search term and configured positions (each ad unit with its positions).
+	 * The language is that of the page being viewed in WordPress (with WPML or Polylang, that of the store version the
+	 * visitor is searching in). A search page (pageType SEARCH) sends no category: IRIOS ignores it there, even in a
+	 * search filtered by category.
 	 */
 	private static function search_ads( Settings $settings, string $query ): ?array {
 		$language = Settings::bcp47_language( determine_locale() );
 		if ( ! $settings->search_ads_enabled() || '' === $query || null === $language ) {
 			return null;
 		}
-		$category = array();
-		$slug     = get_query_var( 'product_cat' );
-		if ( is_string( $slug ) && '' !== $slug ) {
-			$term = get_term_by( 'slug', $slug, 'product_cat' );
-			if ( $term instanceof \WP_Term ) {
-				$category = Catalog::category_names( $term );
-			}
-		}
 		return array(
 			'units'       => $settings->sponsored_units(),
 			'searchQuery' => mb_substr( $query, 0, 255 ),
 			'language'    => $language,
-			'category'    => $category,
 			'results'     => self::result_links(),
 			// With no results, the search's sponsored products go in their own grid above the WooCommerce notice
 			'empty'       => 0 === (int) ( $GLOBALS['wp_query']->found_posts ?? 0 ),

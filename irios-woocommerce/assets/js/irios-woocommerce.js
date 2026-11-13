@@ -1,5 +1,5 @@
 /**
- * Irios for WooCommerce — visitor identity, consent and loading of the Irios tracker.
+ * IRIOS Media for WooCommerce — visitor identity, consent and loading of the Irios tracker.
  *
  * Nothing is sent or stored without consent (WP Consent API or "always" mode). With consent:
  *   - browser identifier: the Irios `irs1P` cookie, created by the Irios script and added to its requests;
@@ -75,7 +75,7 @@
 		window.console.warn( '[irios-woo] ' + message + ' (theme: ' + ( cfg.theme || '?' ) + ')' );
 	}
 
-	debug( 'Irios for WooCommerce ' + ( cfg.version || '?' ) );
+	debug( 'IRIOS Media for WooCommerce ' + ( cfg.version || '?' ) );
 	if ( DEBUG && window.performance && typeof window.performance.setResourceTimingBufferSize === 'function' ) {
 		// With many images the buffer (250 by default) fills up and the /v1/ads call would be missing from the breakdown.
 		window.performance.setResourceTimingBufferSize( 5000 );
@@ -361,6 +361,7 @@
 				if ( ! anonymous ) {
 					renderAds();
 				}
+				pushOnPage();
 				document.dispatchEvent( new CustomEvent( 'irios:ready', { detail: { uids: state.uids, sessionId: state.sessionId } } ) );
 			} )
 			.catch( function () {
@@ -390,6 +391,7 @@
 			} );
 			window.sessionStorage.removeItem( SESSION_KEY );
 		} catch ( e ) {}
+		cancelPush();
 	}
 
 	// ---- API for store events -----------------------------------------------------------------------------------------
@@ -599,7 +601,7 @@
 		var layout = grid.matches( '.wc-block-product-template' ) ? 'block' : grid.matches( GRID_SELECTOR ) ? 'classic' : 'data';
 
 		var timing = {};
-		requestAds( ads, ads.searchQuery, ads.category, layout, timing, 'data' === layout ? imageSizeOf( grid ) : '' )
+		requestAds( ads, 'SEARCH', ads.searchQuery, layout, timing, 'data' === layout ? imageSizeOf( grid ) : '' )
 			.then( function ( result ) {
 				if ( ! result && grid.classList.contains( 'irios-empty-results' ) ) {
 					grid.remove(); // no sponsored products for a search with no results
@@ -623,13 +625,14 @@
 
 	/**
 	 * Sponsored Products auction for a term plus the winners' cards (GET irios/v1/cards). Resolves to null if there
-	 * are no winners. config: { units: [{ adUnit, auth, positions }], language }: all ad units go in the same
+	 * are no winners. pageType: SEARCH on the results page, SEARCH_BAR in the live search (IRIOS pageType; no category,
+	 * IRIOS ignores it on search pages). config: { units: [{ adUnit, auth, positions }], language }: all ad units go in the same
 	 * auction and each one requests as many ads as it has positions. Each ad unit's winners, in order, fill
 	 * its positions from lowest to highest (no product repeated across ad units). timing (optional) collects timings.
 	 *
 	 * Resolves to { placements: [{ position, response }] (by position), cards, timing }.
 	 */
-	function requestAds( config, searchQuery, category, layout, timing, imageSize ) {
+	function requestAds( config, pageType, searchQuery, layout, timing, imageSize ) {
 		timing = timing || {};
 		timing.start = now();
 		var units = ( config.units || [] ).filter( function ( u ) {
@@ -643,9 +646,9 @@
 				timing.loader = now() - timing.start;
 				timing.auctionStart = now();
 				var loader = new window.IriosLoader( Object.assign( adUser(), {
+					pageType: pageType,
 					searchQuery: String( searchQuery ).slice( 0, 255 ),
 					language: config.language,
-					category: category || [],
 					adUnits: units.map( function ( u ) {
 						return { id: u.adUnit, auth: u.auth, type: 'product', maxAds: u.positions.length };
 					} ),
@@ -920,6 +923,32 @@
 		return match ? match[ 1 ] : '';
 	}
 
+	/**
+	 * Shape of the results' images on screen: the template's image or, if it is hidden (a hidden duplicate), another
+	 * visible result's. Falls back to the width/height attributes when nothing is rendered yet.
+	 */
+	function renderedImageBox( template ) {
+		var own = template.querySelector( 'img' );
+		var candidates = [ own ];
+		if ( template.parentElement ) {
+			Array.prototype.forEach.call( template.parentElement.children, function ( sibling ) {
+				if ( sibling !== template && ! sibling.classList.contains( 'irios-sponsored' ) ) {
+					candidates.push( sibling.querySelector( 'img' ) );
+				}
+			} );
+		}
+		for ( var i = 0; i < candidates.length; i++ ) {
+			var c = candidates[ i ];
+			if ( c && c.offsetWidth > 0 && c.offsetHeight > 0 ) {
+				var fit = window.getComputedStyle( c ).objectFit;
+				return { w: c.offsetWidth, h: c.offsetHeight, fit: fit && fit !== 'fill' ? fit : 'cover' };
+			}
+		}
+		var w = own ? Number( own.getAttribute( 'width' ) ) : 0;
+		var h = own ? Number( own.getAttribute( 'height' ) ) : 0;
+		return w && h ? { w: w, h: h, fit: 'cover' } : null;
+	}
+
 	function cloneResult( template, templateUrl, titleText, card ) {
 		var item = template.cloneNode( true );
 		item.classList.add( 'irios-sponsored' );
@@ -932,16 +961,16 @@
 		} );
 		var img = item.querySelector( 'img' );
 		if ( img && card.image ) {
-			var w = Number( img.getAttribute( 'width' ) );
-			var h = Number( img.getAttribute( 'height' ) );
+			var box = renderedImageBox( template );
 			img.setAttribute( 'src', card.image );
 			img.removeAttribute( 'srcset' );
 			img.removeAttribute( 'sizes' );
 			img.setAttribute( 'alt', card.title );
-			if ( w && h ) {
-				// Same box as the cloned result's image, even if the ad's image has a different aspect ratio.
-				img.style.aspectRatio = w + ' / ' + h;
-				img.style.objectFit = 'cover';
+			if ( box ) {
+				// Same box as the results' images as the theme renders them (its CSS may fix the height, so the width/height
+				// attributes are not the shape on screen), even if the ad's image has a different aspect ratio.
+				img.style.aspectRatio = box.w + ' / ' + box.h;
+				img.style.objectFit = box.fit;
 				img.style.height = 'auto';
 			}
 		}
@@ -1092,7 +1121,9 @@
 		var types = ( response && Array.isArray( response.targetingTypes ) ? response.targetingTypes : [] ).filter( function ( t, i, all ) {
 			return reasons[ t ] && all.indexOf( t ) === i;
 		} );
-		var advertiser = ( response && response.advertiserName ) || texts.unknown || '';
+		// DSA art. 26.1: on whose behalf the ad is shown (the brand) and who paid for it (the advertiser); they can differ
+		var brand = ( response && ( response.brandName || response.advertiserName ) ) || texts.unknown || '';
+		var payer = ( response && ( response.advertiserName || response.brandName ) ) || texts.unknown || '';
 		var esc = function ( text ) {
 			var div = document.createElement( 'div' );
 			div.textContent = text == null ? '' : String( text );
@@ -1117,8 +1148,8 @@
 			( profiling ? '<p style="margin:8px 0 0;opacity:.8">' + esc( texts.profiling ) + ' ' +
 				( texts.privacyUrl ? '<a href="' + esc( texts.privacyUrl ) + '">' + esc( texts.privacy ) + '</a>' : esc( texts.privacy ) ) + '.</p>' : '' ) +
 			'<p style="margin:16px 0 0"><strong>' + esc( texts.advertiser ) + '</strong></p>' +
-			'<ul style="margin:4px 0 0;padding-left:1.2em"><li>' + esc( texts.name ) + ': <strong>' + esc( advertiser ) + '</strong></li>' +
-			'<li>' + esc( texts.payer ) + ': <strong>' + esc( advertiser ) + '</strong></li></ul>' +
+			'<ul style="margin:4px 0 0;padding-left:1.2em"><li>' + esc( texts.name ) + ': <strong>' + esc( brand ) + '</strong></li>' +
+			'<li>' + esc( texts.payer ) + ': <strong>' + esc( payer ) + '</strong></li></ul>' +
 			'<div style="text-align:right;margin-top:20px"><button type="button" data-close class="button" style="cursor:pointer">' + esc( texts.ok ) + '</button></div>' +
 			'</div>';
 		var previous = document.activeElement;
@@ -1260,7 +1291,7 @@
 		} catch ( e ) {}
 	}
 
-	// ---- Banners ([irios_banner tag="…"], resolved in PHP to id and auth) ------------------------------------------------
+	// ---- Display ([irios_display tag="…"], resolved in PHP to format, device, id and auth) -----------------------------
 
 	/** Controls placed after the grid (sorting, result count, pagination): the listing banner goes below them. */
 	var LISTING_CONTROLS_SELECTOR =
@@ -1268,6 +1299,47 @@
 
 		/** Product page tabs (description, additional information…): classic WooCommerce, custom themes and blocks. */
 	var PRODUCT_TABS_SELECTOR = '.woocommerce-tabs, .detail-tabs, .wp-block-woocommerce-product-details';
+
+	/** Related and upsell products of the product page: classic WooCommerce, custom themes and blocks. */
+	var RELATED_SELECTOR = 'section.related.products, .related.products, section.upsells.products, .upsells.products, .wp-block-woocommerce-related-products';
+
+	/** Shop sidebar: classic themes (Storefront and most) and block themes. */
+	var SIDEBAR_SELECTOR = '#secondary, aside.widget-area, .widget-area, aside.sidebar, #sidebar, .shop-sidebar';
+
+	/** Desktop from this width (the IRIOS Media standard), mobile below it. */
+	var DESKTOP_FROM = 768;
+
+	/** Whether a placement is for the device the page is shown on (data-device: all, desktop or mobile). */
+	function forThisDevice( slot ) {
+		var device = slot.getAttribute( 'data-device' ) || 'all';
+		if ( device === 'all' ) {
+			return true;
+		}
+		return ( window.innerWidth >= DESKTOP_FROM ) === ( device === 'desktop' );
+	}
+
+	/**
+	 * Spot inside the category grid after its Nth product (cfg.gridAfter): a grid item the full width of the grid
+	 * (an <li> in a <ul> grid), so that the placement does not take the place of a product card.
+	 */
+	function inGridTarget() {
+		var grid = findGrid();
+		if ( ! grid ) {
+			return null;
+		}
+		var products = Array.prototype.filter.call( grid.children, function ( child ) {
+			return child.matches( '.product, .wc-block-product' );
+		} );
+		var after = products[ Math.min( Number( cfg.gridAfter ) || 6, products.length ) - 1 ];
+		if ( ! after || after === products[ products.length - 1 ] ) {
+			return null; // fewer products than N: there is no "inside" the grid
+		}
+		var item = document.createElement( grid.tagName === 'UL' || grid.tagName === 'OL' ? 'li' : 'div' );
+		item.className = 'irios-banner-grid-item';
+		item.style.cssText = 'grid-column:1/-1;width:100%;flex:0 0 100%;max-width:100%;float:none;clear:both;margin:1em 0;list-style:none;';
+		grid.insertBefore( item, after.nextSibling );
+		return { parent: item, before: null };
+	}
 
 	/**
 	 * Places auto-positioned banners (printed hidden in the footer), centred: at the end of the category listing
@@ -1279,7 +1351,19 @@
 			var position = slot.getAttribute( 'data-irios-position' );
 			slot.removeAttribute( 'data-irios-position' );
 			var target = null;
-			if ( position === 'category_after_products' ) {
+			if ( ! forThisDevice( slot ) ) {
+				slot.parentNode.removeChild( slot );
+				return;
+			}
+			if ( position === 'category_sidebar' ) {
+				var sidebar = document.querySelector( SIDEBAR_SELECTOR );
+				target = sidebar && { parent: sidebar, before: sidebar.firstChild };
+			} else if ( position === 'category_in_grid' ) {
+				target = inGridTarget();
+			} else if ( position === 'product_before_related' ) {
+				var related = document.querySelector( RELATED_SELECTOR );
+				target = related && { parent: related.parentNode, before: related };
+			} else if ( position === 'category_after_products' ) {
 				var grid = findGrid();
 				var after = grid;
 				while ( after && after.nextElementSibling && after.nextElementSibling.matches( LISTING_CONTROLS_SELECTOR ) ) {
@@ -1311,9 +1395,42 @@
 	}
 
 	/**
+	 * IRIOS page context of the banners' auction: the page's type (pageType) and what that type requires, the search
+	 * (SEARCH) or the category path (CATEGORY, PRODUCT_DETAIL). null when there is no type (a page the plugin does not
+	 * classify and whose banners give none) or the type lacks what it requires: then no ads are requested.
+	 */
+	function bannerPage( slots ) {
+		var pageType = page.pageType;
+		if ( ! pageType ) {
+			// A page the plugin does not classify: the type given to a banner ([irios_banner page_type="…"]), if any
+			slots.some( function ( slot ) {
+				pageType = slot.getAttribute( 'data-page-type' ) || '';
+				return !! pageType;
+			} );
+		}
+		if ( ! pageType ) {
+			return null;
+		}
+		var context = { pageType: pageType };
+		if ( pageType === 'SEARCH' ) {
+			// Banners on the search page: the search goes too (IRIOS requires it for this page type)
+			context.searchQuery = String( page.value || '' ).trim().slice( 0, 255 );
+			if ( ! context.searchQuery ) {
+				return null;
+			}
+		} else if ( pageType === 'CATEGORY' || pageType === 'PRODUCT_DETAIL' ) {
+			context.category = page.category || [];
+			if ( ! context.category.length ) {
+				return null;
+			}
+		}
+		return context;
+	}
+
+	/**
 	 * A single auction for all banner slots on the page (IriosLoader with all their ad units), with the visitor's uids
-	 * and, on a category, its path as context. Each banner is rendered with render() called from a <script>
-	 * inside its slot: the loader renders into the parent of document.currentScript.
+	 * and the page as context (bannerPage). Each banner is rendered with render() called from a <script> inside its
+	 * slot: the loader renders into the parent of document.currentScript.
 	 */
 	function renderBanners() {
 		if ( ! cfg.bannersEnabled || cfg.bannersEnabled === '0' ) {
@@ -1321,7 +1438,8 @@
 		}
 		placeBanners();
 		var slots = Array.prototype.filter.call( document.querySelectorAll( '.irios-banner[data-ad-unit]' ), function ( slot ) {
-			return ! slot.hasAttribute( 'data-irios-rendered' );
+			// A placement for another device is not requested (the same spot may have a row for each device)
+			return ! slot.hasAttribute( 'data-irios-rendered' ) && forThisDevice( slot );
 		} );
 		if ( ! slots.length ) {
 			return;
@@ -1329,18 +1447,25 @@
 		var units = {};
 		slots.forEach( function ( slot ) {
 			slot.setAttribute( 'data-irios-rendered', '1' );
-			units[ slot.getAttribute( 'data-ad-unit' ) ] = slot.getAttribute( 'data-auth' );
+			// type: the IRIOS ad unit type of the placement's format (banner for images, video): the loader renders
+			// an image or a video player depending on it
+			units[ slot.getAttribute( 'data-ad-unit' ) ] = {
+				auth: slot.getAttribute( 'data-auth' ),
+				type: slot.getAttribute( 'data-type' ) === 'video' ? 'video' : 'banner',
+			};
 		} );
-		var category = page.type === 'category' && page.value ? String( page.value ).split( ' > ' ) : [];
+		var context = bannerPage( slots );
+		if ( ! context ) {
+			return; // no IRIOS page type for this page: no auction (the slots stay empty)
+		}
 		var start = now();
 		loadLoader()
 			.then( function () {
 				var loaderMs = now() - start;
 				var auctionStart = now(); // the auction starts in the loader constructor
-				window.__iriosWooBanners = new window.IriosLoader( Object.assign( adUser(), {
-					category: category,
+				window.__iriosWooBanners = new window.IriosLoader( Object.assign( adUser(), context, {
 					adUnits: Object.keys( units ).map( function ( id ) {
-						return { id: Number( id ), auth: units[ id ], type: 'banner' };
+						return { id: Number( id ), auth: units[ id ].auth, type: units[ id ].type };
 					} ),
 				} ) );
 				slots.forEach( function ( slot ) {
@@ -1377,7 +1502,8 @@
 			// Above the banner, at its top-right corner (same width as the rendered creative) and without wrapping
 			// «Patrocinado ⓘ»
 			label.style.cssText = 'display:block;white-space:nowrap;text-align:right;font-size:11px;opacity:0.7;margin:0 0 0.25em;box-sizing:border-box;align-self:center;max-width:100%;';
-			var width = Number( ads[ 0 ].banner && ads[ 0 ].banner.width );
+			var creative = ads[ 0 ].banner || ads[ 0 ].video || {};
+			var width = Number( creative.width );
 			if ( width ) {
 				label.style.width = width + 'px'; // until the creative is rendered
 			}
@@ -1463,6 +1589,100 @@
 		observer.observe( slot, { childList: true, subtree: true, attributes: true } );
 	}
 
+	// ---- Push notifications ---------------------------------------------------------------------------------------
+
+	var PUSH_PAGES_KEY = 'irios_push_pages'; // pages seen in this visit (sessionStorage)
+	var PUSH_VISIT_KEY = 'irios_push_visit'; // already tried in this visit (sessionStorage)
+	var PUSH_ASKED_KEY = 'irios_push_asked'; // when the browser prompt was last shown (localStorage)
+	var DAY_MS = 24 * 3600 * 1000;
+
+	function stored( storage, key ) {
+		try {
+			return window[ storage ].getItem( key );
+		} catch ( e ) {
+			return null;
+		}
+	}
+
+	function store( storage, key, value ) {
+		try {
+			window[ storage ].setItem( key, value );
+		} catch ( e ) {}
+	}
+
+	function pushSupported() {
+		return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+	}
+
+	/**
+	 * With consent, on every page: counts the page and asks the shopper to subscribe to push notifications at the
+	 * moment set in the settings (cfg.push.trigger): after a purchase (order received page) or after a number of pages
+	 * of the visit. At most once per visit and, if the shopper did not answer, not again until cfg.push.repeatDays have
+	 * passed (0: on every visit). Blocked in the browser: nothing. The IRIOS loader does the subscription (render() of
+	 * the push ad unit), once the service worker served at the site root is registered (its render() waits for one).
+	 */
+	function pushOnPage() {
+		var push = cfg.push;
+		if ( ! push || ! hasConsent() || ! pushSupported() ) {
+			return;
+		}
+		try {
+			var pages = Number( stored( 'sessionStorage', PUSH_PAGES_KEY ) || 0 ) + 1;
+			store( 'sessionStorage', PUSH_PAGES_KEY, String( pages ) );
+			if ( window.Notification.permission === 'denied' || stored( 'sessionStorage', PUSH_VISIT_KEY ) ) {
+				return;
+			}
+			var asked = Number( stored( 'localStorage', PUSH_ASKED_KEY ) || 0 );
+			if ( window.Notification.permission === 'default' && Date.now() - asked < Number( push.repeatDays ) * DAY_MS ) {
+				return;
+			}
+			var moment = push.trigger === 'after_pages'
+				? pages >= Number( push.afterPages )
+				: page.pageType === 'CONFIRMATION';
+			if ( ! moment ) {
+				return;
+			}
+			store( 'sessionStorage', PUSH_VISIT_KEY, '1' );
+			if ( window.Notification.permission === 'default' ) {
+				store( 'localStorage', PUSH_ASKED_KEY, String( Date.now() ) );
+			}
+			navigator.serviceWorker.register( push.serviceWorker, { scope: push.scope } )
+				.then( function () {
+					return loadLoader();
+				} )
+				.then( function () {
+					if ( ! window.IriosLoader || ! hasConsent() ) {
+						return;
+					}
+					window.__iriosWooPush = new window.IriosLoader( Object.assign( adUser(), {
+						adUnits: [ { id: Number( push.id ), auth: push.auth, type: 'push' } ],
+					} ) );
+					// The IRIOS loader renders from a <script> (document.currentScript)
+					var script = document.createElement( 'script' );
+					script.text = 'window.__iriosWooPush && window.__iriosWooPush.render(' + Number( push.id ) + ');';
+					document.body.appendChild( script );
+				} )
+				.catch( function () {} );
+		} catch ( e ) {}
+	}
+
+	/** Consent withdrawn: the push subscription of this browser is cancelled. */
+	function cancelPush() {
+		if ( ! cfg.push || ! ( 'serviceWorker' in navigator ) ) {
+			return;
+		}
+		try {
+			navigator.serviceWorker.getRegistration( cfg.push.serviceWorker )
+				.then( function ( registration ) {
+					return registration && registration.pushManager.getSubscription();
+				} )
+				.then( function ( subscription ) {
+					return subscription && subscription.unsubscribe();
+				} )
+				.catch( function () {} );
+		} catch ( e ) {}
+	}
+
 	// ---- Theme live search (results while typing) ---------------------------------------------------------------------
 
 	/**
@@ -1492,7 +1712,7 @@
 	/** Live search auction for a term. Resolves to null when there are no ads. */
 	function requestLiveAds( term ) {
 		var timing = {};
-		var pending = requestAds( cfg.liveSearchAds, term, [], 'data', timing ).catch( function () {
+		var pending = requestAds( cfg.liveSearchAds, 'SEARCH_BAR', term, 'data', timing ).catch( function () {
 			return null;
 		} );
 		pending.timing = timing;

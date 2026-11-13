@@ -57,6 +57,32 @@ final class Catalog {
 		return $names;
 	}
 
+	/**
+	 * Category path (root → leaf) of a product, for the ads on its page: its deepest category, and on a tie, the one
+	 * with the lowest id (the same rule as the catalog sent to IRIOS). Empty if it has none.
+	 *
+	 * @return string[]
+	 */
+	public static function product_category_names( int $product_id ): array {
+		$terms = get_the_terms( $product_id, 'product_cat' );
+		if ( ! is_array( $terms ) ) {
+			return array();
+		}
+		$best       = null;
+		$best_depth = -1;
+		foreach ( $terms as $term ) {
+			if ( ! $term instanceof \WP_Term ) {
+				continue;
+			}
+			$depth = count( get_ancestors( $term->term_id, 'product_cat', 'taxonomy' ) );
+			if ( $depth > $best_depth || ( $depth === $best_depth && $term->term_id < $best->term_id ) ) {
+				$best       = $term;
+				$best_depth = $depth;
+			}
+		}
+		return null === $best ? array() : self::category_names( $best );
+	}
+
 	/** Product representing the product page: the simple one, or the variable's representative variation. */
 	public static function view_product( \WC_Product $product ): ?\WC_Product {
 		if ( ! $product->is_type( 'variable' ) ) {

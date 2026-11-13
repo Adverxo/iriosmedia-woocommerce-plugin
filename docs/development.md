@@ -74,7 +74,7 @@ Installed stores learn about the release through the update notice (`src/Updates
 `releases/latest` API, cached for 12 hours. The repository must be public for it to work.
 
 The version is shown in **Plugins**, in the settings header (**WooCommerce → Settings → Integration → Irios Media**)
-and, with `?irios_debug=1`, in the browser console (`[irios-woo] Irios for WooCommerce <version>`).
+and, with `?irios_debug=1`, in the browser console (`[irios-woo] IRIOS Media for WooCommerce <version>`).
 
 ## Tests
 
@@ -172,7 +172,10 @@ compat/run.sh astra kadence    # only those
 
 ## Translations
 
-The plugin is written in English and ships a Spanish translation (`es_ES`) in `irios-woocommerce/languages/`. Any
+The plugin is written in English. The settings and the admin notices stay in English in every language (the IRIOS
+Media standard): only what shoppers see is translated ("About this ad", the default sponsored label). It ships a
+Spanish translation (`es_ES`) of those texts in `irios-woocommerce/languages/`; the admin entries of the `.po` are left
+empty on purpose. Any
 other language shows the English texts.
 
 To add a language, translate `irios-woocommerce.pot` (e.g. with Poedit) into `irios-woocommerce-<locale>.po` and

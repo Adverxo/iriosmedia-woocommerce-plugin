@@ -48,6 +48,19 @@ class WC_Order {
 	public function save_meta_data(): void {
 		++$this->saves;
 	}
+
+	public function get_meta( string $key ) {
+		return $this->meta[ $key ] ?? '';
+	}
+}
+
+class WC_Order_Item_Product {
+	public function __construct( private array $data ) {
+	}
+
+	public function __call( string $name, array $args ) {
+		return $this->data[ substr( $name, 4 ) ] ?? null;
+	}
 }
 
 class WC_Cart {
@@ -90,5 +103,15 @@ class WC_Session_Handler {
 
 	public function get_session_cookie() {
 		return self::$cookie;
+	}
+}
+
+class WP_Term {
+	public int $term_id;
+	public string $name;
+
+	public function __construct( int $term_id, string $name ) {
+		$this->term_id = $term_id;
+		$this->name    = $name;
 	}
 }

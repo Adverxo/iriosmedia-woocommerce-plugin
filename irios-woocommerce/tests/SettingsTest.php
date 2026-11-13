@@ -127,7 +127,7 @@ final class SettingsTest extends WordPressTestCase {
 	public function test_banners_are_resolved_by_tag(): void {
 		$s = new Settings( array( 'banners' => '[{"tag":"home","id":"101","auth":"abc"},{"tag":"categoria-sticks","id":102,"auth":"def"}]' ) );
 
-		$this->assertSame( array( 'tag' => 'home', 'id' => 101, 'auth' => 'abc', 'position' => '' ), $s->banner( 'Home ' ) );
+		$this->assertSame( array( 'tag' => 'home', 'format' => 'image', 'type' => 'banner', 'device' => 'all', 'id' => 101, 'auth' => 'abc', 'position' => '' ), $s->banner( 'Home ' ) );
 		$this->assertSame( 102, $s->banner( 'categoria-sticks' )['id'] );
 		$this->assertNull( $s->banner( 'no-existe' ) );
 		$this->assertSame( array(), ( new Settings( array() ) )->banners() );
@@ -146,8 +146,47 @@ final class SettingsTest extends WordPressTestCase {
 			)
 		);
 
-		$this->assertSame( array( array( 'tag' => 'home', 'id' => 101, 'auth' => 'abc', 'position' => '' ) ), $result['banners'] );
+		$this->assertSame( array( array( 'tag' => 'home', 'format' => 'image', 'type' => 'banner', 'device' => 'all', 'id' => 101, 'auth' => 'abc', 'position' => '' ) ), $result['banners'] );
 		$this->assertCount( 4, $result['errors'] );
+	}
+
+	public function test_display_format_device_and_the_common_positions(): void {
+		$result = Settings::sanitize_banners(
+			array(
+				array( 'tag' => 'pdp-video', 'format' => 'video', 'device' => 'desktop', 'id' => '1', 'auth' => 'a', 'position' => Settings::POSITION_PRODUCT_BEFORE_RELATED ),
+				array( 'tag' => 'grid', 'device' => 'mobile', 'id' => '2', 'auth' => 'b', 'position' => Settings::POSITION_CATEGORY_IN_GRID ),
+				array( 'tag' => 'side', 'id' => '3', 'auth' => 'c', 'position' => Settings::POSITION_CATEGORY_SIDEBAR ),
+				array( 'tag' => 'gif', 'format' => 'gif', 'id' => '4', 'auth' => 'd' ),
+				array( 'tag' => 'tv', 'device' => 'tv', 'id' => '5', 'auth' => 'e' ),
+			)
+		);
+
+		$this->assertSame( array( 'video', 'banner', 'banner' ), array_column( $result['banners'], 'type' ) );
+		$this->assertSame( array( 'desktop', 'mobile', 'all' ), array_column( $result['banners'], 'device' ) );
+		$this->assertCount( 2, $result['errors'] );
+	}
+
+	public function test_enable_irios_media_switch(): void {
+		$base = array( 'js_domain' => 'shop.iriosmedia.online', 'store_id' => '42' );
+		$this->assertTrue( ( new Settings( $base ) )->is_configured() ); // 1.0 installs: no switch saved, on
+		$this->assertFalse( ( new Settings( $base + array( 'enabled' => 'no' ) ) )->is_configured() );
+		$this->assertFalse( ( new Settings( $base + array( 'enabled' => 'no' ) ) )->enabled() );
+	}
+
+	public function test_grid_position_and_push_settings(): void {
+		$this->assertSame( 6, ( new Settings( array() ) )->display_in_grid_after() );
+		$this->assertSame( 4, ( new Settings( array( 'display_in_grid_after' => '4' ) ) )->display_in_grid_after() );
+
+		$this->assertNull( ( new Settings( array( 'push_enabled' => 'yes', 'push_ad_unit' => '7' ) ) )->push() ); // no auth
+		$this->assertNull( ( new Settings( array( 'push_ad_unit' => '7', 'push_auth' => 'x' ) ) )->push() );        // disabled
+		$this->assertSame(
+			array( 'id' => 7, 'auth' => 'x', 'trigger' => 'after_purchase', 'afterPages' => 2, 'repeatDays' => 30 ),
+			( new Settings( array( 'push_enabled' => 'yes', 'push_ad_unit' => '7', 'push_auth' => 'x' ) ) )->push()
+		);
+		$this->assertSame(
+			array( 'id' => 7, 'auth' => 'x', 'trigger' => 'after_pages', 'afterPages' => 3, 'repeatDays' => 0 ),
+			( new Settings( array( 'push_enabled' => 'yes', 'push_ad_unit' => '7', 'push_auth' => 'x', 'push_trigger' => 'after_pages', 'push_after_pages' => '3', 'push_repeat_days' => '0' ) ) )->push()
+		);
 	}
 
 	public function test_banners_with_automatic_position(): void {

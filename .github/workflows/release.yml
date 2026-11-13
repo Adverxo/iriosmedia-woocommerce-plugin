@@ -1,4 +1,4 @@
-# Release of Irios for WooCommerce: pushing a version tag (e.g. `git tag 1.0.6 && git push origin 1.0.6`) runs the tests,
+# Release of IRIOS Media for WooCommerce: pushing a version tag (e.g. `git tag 1.0.6 && git push origin 1.0.6`) runs the tests,
 # builds the zip with bin/package.sh and publishes a GitHub Release, with the version's CHANGELOG.md section as release
 # notes (bin/release-notes.sh; no section, no release) and two assets:
 #   - irios-woocommerce-<version>.zip  (versioned)
@@ -85,6 +85,6 @@ jobs:
           gh release create "$GITHUB_REF_NAME" \
             "dist/irios-woocommerce-${GITHUB_REF_NAME}.zip" \
             dist/irios-woocommerce.zip \
-            --title "Irios for WooCommerce ${GITHUB_REF_NAME}" \
+            --title "IRIOS Media for WooCommerce ${GITHUB_REF_NAME}" \
             --notes-file "$RUNNER_TEMP/notes.md" \
             --verify-tag

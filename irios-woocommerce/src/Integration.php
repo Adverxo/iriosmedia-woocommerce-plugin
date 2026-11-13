@@ -9,10 +9,10 @@ final class Integration extends \WC_Integration {
 
 	public function __construct() {
 		$this->id                 = 'irios';
-		$this->method_title       = 'Irios Media';
+		$this->method_title       = 'IRIOS Media';
 		$this->method_description = sprintf(
 			/* translators: %s: plugin version */
-			__( 'Irios Media visitor events and identity and, optionally, Sponsored Products and banners. Version %s.', 'irios-woocommerce' ),
+			__( 'IRIOS Media visitor events and identity and, optionally, Sponsored Products, display ads and push notifications. Version %s.', 'irios-woocommerce' ),
 			IRIOS_WC_VERSION
 		);
 
@@ -28,12 +28,29 @@ final class Integration extends \WC_Integration {
 		'keep_single_result',
 	);
 
+	/** Fields of the Display section: hidden while the enable checkbox is unchecked. */
+	private const DISPLAY_FIELDS = array( 'display_in_grid_after' );
+
+	/** Fields of the Push section: hidden while the enable checkbox is unchecked. */
+	private const PUSH_FIELDS = array( 'push_ad_unit', 'push_auth', 'push_trigger', 'push_after_pages', 'push_repeat_days' );
+
 	public function init_form_fields(): void {
 		$defaults          = Settings::defaults();
 		$this->form_fields = array(
-			// ---- Irios: events and identity (always shown, no title: it is the main section) ------------------------
+			// ---- General: connection with IRIOS Media and consent ------------------------------------------------
+			'section_general'          => array(
+				'title' => __( 'General', 'irios-woocommerce' ),
+				'type'  => 'title',
+			),
+			'enabled'                  => array(
+				'title'       => __( 'Enable IRIOS Media', 'irios-woocommerce' ),
+				'type'        => 'checkbox',
+				'label'       => __( 'Enable IRIOS Media', 'irios-woocommerce' ),
+				'description' => __( 'Sends the shopper events to IRIOS Media (only with consent) and shows its ads. Without it, or without the IRIOS Media domain and the Store ID, the store stays exactly as without the integration.', 'irios-woocommerce' ),
+				'default'     => $defaults['enabled'],
+			),
 			'js_domain'                => array(
-				'title'       => __( 'Irios API domain', 'irios-woocommerce' ),
+				'title'       => __( 'IRIOS Media domain', 'irios-woocommerce' ),
 				'type'        => 'text',
 				'description' => __( 'Without https:// or path, e.g. example.iriosmedia.online. irios-tracker.js and irios-loader.js are loaded from it.', 'irios-woocommerce' ),
 				'default'     => $defaults['js_domain'],
@@ -41,7 +58,7 @@ final class Integration extends \WC_Integration {
 			'store_id'                 => array(
 				'title'       => __( 'Store ID', 'irios-woocommerce' ),
 				'type'        => 'text',
-				'description' => __( 'Numeric id of the store in Irios.', 'irios-woocommerce' ),
+				'description' => __( 'Numeric ID of the store in IRIOS Media.', 'irios-woocommerce' ),
 				'default'     => $defaults['store_id'],
 			),
 			'consent_mode'             => array(
@@ -52,7 +69,7 @@ final class Integration extends \WC_Integration {
 					Settings::CONSENT_ASESOR_COOKIES => __( 'Asesor de Cookies RGPD (webartesanal.com banner)', 'irios-woocommerce' ),
 					Settings::CONSENT_ALWAYS         => __( 'Always (the store handles consent another way)', 'irios-woocommerce' ),
 				),
-				'description' => __( 'Until the visitor accepts marketing cookies, only contextual ads are requested: no identifiers, no Irios cookies and no events.', 'irios-woocommerce' ),
+				'description' => __( 'Until the visitor accepts marketing cookies, only contextual ads are requested: no identifiers, no IRIOS Media cookies and no events.', 'irios-woocommerce' ),
 				'default'     => $defaults['consent_mode'],
 			),
 
@@ -69,12 +86,12 @@ final class Integration extends \WC_Integration {
 				'default' => $defaults['sponsored_enabled'],
 			),
 			'sponsored_slots'          => array(
-				'title'   => __( 'Positions', 'irios-woocommerce' ),
+				'title'   => __( 'Search results positions', 'irios-woocommerce' ),
 				'type'    => 'irios_slots',
 				'default' => $defaults['sponsored_slots'],
 			),
 			'sponsored_label'          => array(
-				'title'       => __( 'Ad label', 'irios-woocommerce' ),
+				'title'       => __( 'Sponsored label', 'irios-woocommerce' ),
 				'type'        => 'text',
 				'description' => __( 'Text added to the sponsored cards. For advertising transparency, do not leave it empty.', 'irios-woocommerce' ),
 				'default'     => __( 'Sponsored', 'irios-woocommerce' ),
@@ -87,27 +104,86 @@ final class Integration extends \WC_Integration {
 				'default'     => $defaults['keep_single_result'],
 			),
 
-			// ---- Banners (optional) --------------------------------------------------------------------------------
+			// ---- Display: image and video (optional) -------------------------------------------------------------
 			'section_banners'          => array(
-				'title'       => __( 'Banners', 'irios-woocommerce' ),
+				'title'       => __( 'Display (Image and Video)', 'irios-woocommerce' ),
 				'type'        => 'title',
-				'description' => __( 'Irios banners anywhere on the site. Add each banner with a tag and its Irios ad unit details, and paste [irios_banner tag="TAG"] wherever you want to show it: a page, a WPBakery element, a block, a widget or a category description. When disabled, the shortcodes show nothing.', 'irios-woocommerce' ),
+				'description' => __( 'Image and video ads in placements of the site: in an automatic position or with [irios_display tag="TAG"] wherever you want to show it (a page, the home page, a WPBakery element, a block, a widget or a category description). When disabled, the shortcodes show nothing.', 'irios-woocommerce' ),
 			),
 			'banners_enabled'          => array(
 				'title'   => __( 'Enable', 'irios-woocommerce' ),
 				'type'    => 'checkbox',
-				'label'   => __( 'Show Irios banners', 'irios-woocommerce' ),
+				'label'   => __( 'Show IRIOS Media display ads', 'irios-woocommerce' ),
 				'default' => $defaults['banners_enabled'],
 			),
 			'banners'                  => array(
-				'title'   => __( 'Banners', 'irios-woocommerce' ),
+				'title'   => __( 'Placements', 'irios-woocommerce' ),
 				'type'    => 'irios_banners',
 				'default' => $defaults['banners'],
 			),
+			'display_in_grid_after'    => array(
+				'title'       => __( 'Grid: after product', 'irios-woocommerce' ),
+				'type'        => 'number',
+				'description' => __( 'For the "Category: in grid" position: the placement goes after this product of the listing, the full width of the grid.', 'irios-woocommerce' ),
+				'default'     => $defaults['display_in_grid_after'],
+				'custom_attributes' => array( 'min' => 1, 'step' => 1 ),
+			),
+
+			// ---- Push notifications (optional) ---------------------------------------------------------------------
+			'section_push'             => array(
+				'title'       => __( 'Push Notifications', 'irios-woocommerce' ),
+				'type'        => 'title',
+				'description' => sprintf(
+					/* translators: %s: service worker URL */
+					__( 'Brand notifications for the shoppers who subscribe in their browser, only with consent. The service worker is served at %s: in IRIOS Media, the push ad unit must point to it.', 'irios-woocommerce' ),
+					Push::url()
+				),
+			),
+			'push_enabled'             => array(
+				'title'   => __( 'Enable', 'irios-woocommerce' ),
+				'type'    => 'checkbox',
+				'label'   => __( 'Ask shoppers to subscribe to IRIOS Media push notifications', 'irios-woocommerce' ),
+				'default' => $defaults['push_enabled'],
+			),
+			'push_ad_unit'             => array(
+				'title'   => __( 'Ad unit ID', 'irios-woocommerce' ),
+				'type'    => 'text',
+				'default' => $defaults['push_ad_unit'],
+			),
+			'push_auth'                => array(
+				'title'   => __( 'Ad unit auth', 'irios-woocommerce' ),
+				'type'    => 'text',
+				'default' => $defaults['push_auth'],
+			),
+			'push_trigger'             => array(
+				'title'       => __( 'When to ask for permission', 'irios-woocommerce' ),
+				'type'        => 'select',
+				'options'     => array(
+					Settings::PUSH_AFTER_PURCHASE => __( 'After a purchase', 'irios-woocommerce' ),
+					Settings::PUSH_AFTER_PAGES    => __( 'After a number of pages', 'irios-woocommerce' ),
+				),
+				'description' => __( 'The browser permission prompt is shown only with consent: after a purchase (on the order received page) or after a number of pages of the visit.', 'irios-woocommerce' ),
+				'default'     => $defaults['push_trigger'],
+			),
+			'push_after_pages'         => array(
+				'title'             => __( 'Number of pages', 'irios-woocommerce' ),
+				'type'              => 'number',
+				'default'           => $defaults['push_after_pages'],
+				'custom_attributes' => array( 'min' => 1, 'step' => 1 ),
+			),
+			'push_repeat_days'         => array(
+				'title'             => __( 'Ask again after (days)', 'irios-woocommerce' ),
+				'type'              => 'number',
+				'description'       => __( 'If the shopper did not answer the browser prompt, it is not shown again until these days have passed (0: on every visit).', 'irios-woocommerce' ),
+				'default'           => $defaults['push_repeat_days'],
+				'custom_attributes' => array( 'min' => 0, 'step' => 1 ),
+			),
 		);
 
-		foreach ( self::SPONSORED_FIELDS as $key ) {
-			$this->form_fields[ $key ]['class'] = trim( ( $this->form_fields[ $key ]['class'] ?? '' ) . ' irios-sponsored-field' );
+		foreach ( array( 'irios-sponsored-field' => self::SPONSORED_FIELDS, 'irios-banners-field' => self::DISPLAY_FIELDS, 'irios-push-field' => self::PUSH_FIELDS ) as $class => $keys ) {
+			foreach ( $keys as $key ) {
+				$this->form_fields[ $key ]['class'] = trim( ( $this->form_fields[ $key ]['class'] ?? '' ) . ' ' . $class );
+			}
 		}
 	}
 
@@ -117,7 +193,7 @@ final class Integration extends \WC_Integration {
 		parent::admin_options();
 		wc_enqueue_js(
 			"( function ( $ ) {
-				[ [ '#woocommerce_irios_sponsored_enabled', '.irios-sponsored-field' ], [ '#woocommerce_irios_banners_enabled', '.irios-banners-field' ] ]
+				[ [ '#woocommerce_irios_sponsored_enabled', '.irios-sponsored-field' ], [ '#woocommerce_irios_banners_enabled', '.irios-banners-field' ], [ '#woocommerce_irios_push_enabled', '.irios-push-field' ] ]
 					.forEach( function ( pair ) {
 						var toggle = $( pair[0] );
 						var rows = $( pair[1] ).closest( 'tr' );
@@ -125,6 +201,14 @@ final class Integration extends \WC_Integration {
 						toggle.on( 'change', sync );
 						sync();
 					} );
+				// \"Number of pages\" only with \"After a number of pages\"
+				var trigger = $( '#woocommerce_irios_push_trigger' );
+				var pages = $( '#woocommerce_irios_push_after_pages' ).closest( 'tr' );
+				var syncPages = function () {
+					pages.toggle( $( '#woocommerce_irios_push_enabled' ).is( ':checked' ) && trigger.val() === 'after_pages' );
+				};
+				trigger.add( '#woocommerce_irios_push_enabled' ).on( 'change', syncPages );
+				syncPages();
 				$( document ).on( 'click', '.irios-rows-add', function ( e ) {
 					e.preventDefault();
 					var body = $( this ).closest( '.irios-rows' ).find( 'tbody' );
@@ -145,44 +229,54 @@ final class Integration extends \WC_Integration {
 	}
 
 	/**
-	 * Banners table (tag, ad unit id and auth, position), with rows that can be added and removed. Submitted as
-	 * woocommerce_irios_banners[n][tag|id|auth|position].
+	 * Display placements table (tag, format, device, ad unit id and auth, position), with rows that can be added and
+	 * removed. Submitted as woocommerce_irios_banners[n][tag|format|device|id|auth|position].
 	 *
 	 * @param string $key @param array<string,mixed> $data
 	 */
 	public function generate_irios_banners_html( $key, $data ): string {
 		$field   = $this->get_field_key( $key );
 		$banners = ( new Settings( array( 'banners' => (string) $this->get_option( $key, '[]' ) ) ) )->banners();
-		$cells   = static function ( string $index, array $banner ) use ( $field ): array {
-			$options = array(
-				Settings::POSITION_NONE                       => __( 'Manual (shortcode)', 'irios-woocommerce' ),
-				Settings::POSITION_CATEGORY_AFTER_PRODUCTS    => __( 'Category page: bottom', 'irios-woocommerce' ),
-				Settings::POSITION_PRODUCT_BEFORE_DESCRIPTION => __( 'Product page: middle', 'irios-woocommerce' ),
-			);
+		$select  = static function ( string $index, string $name, array $options, string $value ) use ( $field ): string {
 			$html = '';
 			foreach ( $options as $option => $label ) {
-				$html .= sprintf( '<option value="%s"%s>%s</option>', esc_attr( $option ), selected( $banner['position'] ?? '', $option, false ), esc_html( $label ) );
+				$html .= sprintf( '<option value="%s"%s>%s</option>', esc_attr( (string) $option ), selected( $value, (string) $option, false ), esc_html( $label ) );
 			}
+			return sprintf( '<select name="%s[%s][%s]">%s</select>', esc_attr( $field ), esc_attr( $index ), esc_attr( $name ), $html );
+		};
+		$cells   = static function ( string $index, array $banner ) use ( $field, $select ): array {
+			$positions = array(
+				Settings::POSITION_NONE                       => __( 'Manual only', 'irios-woocommerce' ),
+				Settings::POSITION_CATEGORY_SIDEBAR           => __( 'Category: sidebar', 'irios-woocommerce' ),
+				Settings::POSITION_CATEGORY_IN_GRID           => __( 'Category: in grid', 'irios-woocommerce' ),
+				Settings::POSITION_CATEGORY_AFTER_PRODUCTS    => __( 'Category: bottom', 'irios-woocommerce' ),
+				Settings::POSITION_PRODUCT_BEFORE_DESCRIPTION => __( 'Product: description', 'irios-woocommerce' ),
+				Settings::POSITION_PRODUCT_BEFORE_RELATED     => __( 'Product: related', 'irios-woocommerce' ),
+			);
 			return array(
 				self::text_input( $field, $index, 'tag', $banner['tag'] ?? '', __( 'home', 'irios-woocommerce' ) ),
+				$select( $index, 'format', array( 'image' => __( 'Image', 'irios-woocommerce' ), 'video' => __( 'Video', 'irios-woocommerce' ) ), (string) ( $banner['format'] ?? 'image' ) ),
+				$select( $index, 'device', array( 'all' => __( 'All', 'irios-woocommerce' ), 'desktop' => __( 'Desktop', 'irios-woocommerce' ), 'mobile' => __( 'Mobile', 'irios-woocommerce' ) ), (string) ( $banner['device'] ?? 'all' ) ),
 				self::text_input( $field, $index, 'id', isset( $banner['id'] ) ? (string) $banner['id'] : '', '1234' ),
 				self::text_input( $field, $index, 'auth', $banner['auth'] ?? '', __( 'ad unit auth', 'irios-woocommerce' ) ),
-				sprintf( '<select name="%s[%s][position]">%s</select>', esc_attr( $field ), esc_attr( $index ), $html ),
+				$select( $index, 'position', $positions, (string) ( $banner['position'] ?? '' ) ),
 			);
 		};
 		return self::rows_table(
 			$data['title'],
 			'irios-banners irios-banners-field',
 			array(
-				array( __( 'Tag', 'irios-woocommerce' ), 22 ),
-				array( __( 'Ad unit (id)', 'irios-woocommerce' ), 13 ),
-				array( __( 'Auth', 'irios-woocommerce' ), 27 ),
-				array( __( 'Position', 'irios-woocommerce' ), 32 ),
+				array( __( 'Tag', 'irios-woocommerce' ), 14 ),
+				array( __( 'Format', 'irios-woocommerce' ), 11 ),
+				array( __( 'Device', 'irios-woocommerce' ), 12 ),
+				array( __( 'Ad unit ID', 'irios-woocommerce' ), 11 ),
+				array( __( 'Auth', 'irios-woocommerce' ), 17 ),
+				array( __( 'Position', 'irios-woocommerce' ), 29 ),
 			),
 			$cells,
 			$banners,
-			__( 'Add banner', 'irios-woocommerce' ),
-			__( 'On the site: [irios_banner tag="TAG"], or an automatic position. Tag in lowercase, without spaces (e.g. home, category-sticks).', 'irios-woocommerce' )
+			__( 'Add placement', 'irios-woocommerce' ),
+			__( 'Tag in lowercase, without spaces (e.g. home, category-sticks). Format: that of the ad unit in IRIOS Media. Device: the same spot can have one row per device (desktop from 768 px wide). Position: Manual only, with [irios_display tag="TAG"] anywhere on the site (also the home page), or automatic: category sidebar, inside the category grid, after the category products, before the product description or before the related products.', 'irios-woocommerce' )
 		);
 	}
 
@@ -214,13 +308,13 @@ final class Integration extends \WC_Integration {
 			'irios-slots irios-sponsored-field',
 			array(
 				array( __( 'Position', 'irios-woocommerce' ), 16 ),
-				array( __( 'Ad unit (id)', 'irios-woocommerce' ), 22 ),
+				array( __( 'Ad unit ID', 'irios-woocommerce' ), 22 ),
 				array( __( 'Auth', 'irios-woocommerce' ), 56 ),
 			),
 			$cells,
 			$slots,
 			__( 'Add position', 'irios-woocommerce' ),
-			__( 'One ad per row. The position is the slot in the results grid: 1 is top left, counted in reading order (left to right, row by row). The same ad unit can take several positions. They are also used in the live search dropdown, each ad at its position in the list.', 'irios-woocommerce' )
+			__( 'One ad per row. The position is the place in the results grid: 1 is top left, counted in reading order (left to right, row by row). The same ad unit can take several positions. In the live search dropdown there is at most one ad, at the top: the one of the lowest position.', 'irios-woocommerce' )
 		);
 	}
 
@@ -311,7 +405,7 @@ final class Integration extends \WC_Integration {
 		$rows   = is_array( $value ) ? array_values( array_filter( $value, 'is_array' ) ) : array();
 		$result = Settings::sanitize_sponsored_slots( wp_unslash( $rows ) );
 		foreach ( $result['errors'] as $error ) {
-			\WC_Admin_Settings::add_error( 'Irios: ' . $error );
+			\WC_Admin_Settings::add_error( 'IRIOS Media: ' . $error );
 		}
 		return (string) wp_json_encode( $result['slots'] );
 	}
@@ -321,7 +415,7 @@ final class Integration extends \WC_Integration {
 		$rows   = is_array( $value ) ? array_values( array_filter( $value, 'is_array' ) ) : array();
 		$result = Settings::sanitize_banners( wp_unslash( $rows ) );
 		foreach ( $result['errors'] as $error ) {
-			\WC_Admin_Settings::add_error( 'Irios: ' . $error );
+			\WC_Admin_Settings::add_error( 'IRIOS Media: ' . $error );
 		}
 		return (string) wp_json_encode( $result['banners'] );
 	}
@@ -331,7 +425,10 @@ final class Integration extends \WC_Integration {
 		$saved = parent::process_admin_options();
 		$settings = new Settings( $this->settings );
 		if ( $settings->sponsored_enabled() && ! $settings->search_ads_enabled() ) {
-			\WC_Admin_Settings::add_error( __( 'Irios: to show Sponsored Products, add at least one position with its ad unit and auth. Until then, no ads are shown.', 'irios-woocommerce' ) );
+			\WC_Admin_Settings::add_error( __( 'IRIOS Media: to show Sponsored Products, add at least one position with its ad unit and auth. Until then, no ads are shown.', 'irios-woocommerce' ) );
+		}
+		if ( 'yes' === ( $this->settings['push_enabled'] ?? 'no' ) && null === $settings->push() ) {
+			\WC_Admin_Settings::add_error( __( 'IRIOS Media: to ask for push notifications, add the push ad unit and its auth. Until then, nothing is asked.', 'irios-woocommerce' ) );
 		}
 		return $saved;
 	}
@@ -341,15 +438,38 @@ final class Integration extends \WC_Integration {
 		$value  = (string) $value;
 		$domain = Settings::normalize_domain( $value );
 		if ( '' !== trim( $value ) && '' === $domain ) {
-			\WC_Admin_Settings::add_error( __( 'Irios: the JS domain is not valid.', 'irios-woocommerce' ) );
+			\WC_Admin_Settings::add_error( __( 'IRIOS Media: the IRIOS Media domain is not valid.', 'irios-woocommerce' ) );
 			return (string) $this->get_option( $key );
 		}
 		return $domain;
 	}
 
 	/** @param string $key @param mixed $value */
+	public function validate_push_ad_unit_field( $key, $value ): string {
+		return $this->positive_int_or_keep( $key, (string) $value, __( 'IRIOS Media: the push Ad unit ID must be a number.', 'irios-woocommerce' ) );
+	}
+
+	/** @param string $key @param mixed $value */
+	public function validate_display_in_grid_after_field( $key, $value ): string {
+		$value = trim( (string) $value );
+		return Settings::is_positive_int( $value ) ? $value : '6';
+	}
+
+	/** @param string $key @param mixed $value */
+	public function validate_push_after_pages_field( $key, $value ): string {
+		$value = trim( (string) $value );
+		return Settings::is_positive_int( $value ) ? $value : '2';
+	}
+
+	/** @param string $key @param mixed $value */
+	public function validate_push_repeat_days_field( $key, $value ): string {
+		$value = trim( (string) $value );
+		return ctype_digit( $value ) ? (string) (int) $value : '30';
+	}
+
+	/** @param string $key @param mixed $value */
 	public function validate_store_id_field( $key, $value ): string {
-		return $this->positive_int_or_keep( $key, (string) $value, __( 'Irios: the Store ID must be a number.', 'irios-woocommerce' ) );
+		return $this->positive_int_or_keep( $key, (string) $value, __( 'IRIOS Media: the Store ID must be a number.', 'irios-woocommerce' ) );
 	}
 
 	private function positive_int_or_keep( string $key, string $value, string $error ): string {
