@@ -19,7 +19,20 @@ BUILD="$(mktemp -d)"
 trap 'rm -rf "$BUILD"' EXIT
 
 mkdir -p "$BUILD/irios-woocommerce" "$ROOT/dist"
-rsync -a --exclude vendor --exclude tests --exclude '.phpunit*' --exclude phpunit.xml.dist --exclude .gitignore \
+# The storefront JS is built from assets/js/src (npm run build:js) and committed: if what is committed is not what
+# the sources build to, the zip would ship a different file from the one the tests ran against
+if command -v node >/dev/null 2>&1 && [[ -d "$ROOT/node_modules/esbuild" ]]; then
+    built="$(mktemp)"
+    cp "$PLUGIN/assets/js/irios-woocommerce.js" "$built"
+    (cd "$ROOT" && node bin/build-js.mjs)
+    if ! diff -q "$built" "$PLUGIN/assets/js/irios-woocommerce.js" >/dev/null; then
+        echo "assets/js/irios-woocommerce.js was out of date; rebuilt. Commit it." >&2
+    fi
+    rm -f "$built"
+fi
+
+rsync -a --exclude vendor --exclude tests --exclude src --exclude build --exclude '.phpunit*' --exclude phpunit.xml.dist \
+    --exclude .gitignore \
     "$PLUGIN/" "$BUILD/irios-woocommerce/"
 
 MAIN="$BUILD/irios-woocommerce/irios-woocommerce.php"

@@ -5,9 +5,13 @@
   "license": "GPL-2.0-or-later",
   "type": "module",
   "scripts": {
-    "test": "vitest run"
+    "test": "vitest run",
+    "build:js": "node bin/build-js.mjs",
+    "lint": "eslint irios-woocommerce/assets/js irios-woocommerce/tests/js bin --ext .js,.mjs"
   },
   "devDependencies": {
+    "esbuild": "^0.24.2",
+    "eslint": "^8.57.1",
     "istanbul-lib-coverage": "^3.2.2",
     "istanbul-lib-instrument": "^6.0.3",
     "istanbul-lib-report": "^3.0.1",

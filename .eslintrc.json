@@ -1,0 +1,93 @@
+{
+    "root": true,
+    "env": {
+        "browser": true,
+        "es2017": true
+    },
+    "parserOptions": {
+        "ecmaVersion": 2017,
+        "sourceType": "module"
+    },
+    "rules": {
+        "no-undef": "error",
+        "no-unused-vars": [
+            "error",
+            {
+                "args": "none"
+            }
+        ],
+        "no-redeclare": "error",
+        "no-shadow-restricted-names": "error"
+    },
+    "globals": {
+        "jQuery": "readonly",
+        "wp": "readonly"
+    },
+    "overrides": [
+        {
+            "files": [
+                "irios-woocommerce/assets/js/src/**/*.mjs"
+            ],
+            "rules": {
+                "no-restricted-globals": [
+                    "error",
+                    {
+                        "name": "stop",
+                        "message": "import { stop } from './tracker.mjs'"
+                    },
+                    {
+                        "name": "close",
+                        "message": "a window.close() here is never what was meant"
+                    },
+                    {
+                        "name": "name",
+                        "message": "window.name is never what was meant: name a variable"
+                    },
+                    {
+                        "name": "event",
+                        "message": "take the event from the handler's argument"
+                    },
+                    {
+                        "name": "status",
+                        "message": "window.status is never what was meant"
+                    }
+                ]
+            }
+        },
+        {
+            "files": [
+                "irios-woocommerce/assets/js/irios-woocommerce.js",
+                "irios-woocommerce/assets/js/irios-sw.js"
+            ],
+            "parserOptions": {
+                "ecmaVersion": 5,
+                "sourceType": "script"
+            },
+            "env": {
+                "serviceworker": true
+            }
+        },
+        {
+            "files": [
+                "irios-woocommerce/tests/js/**",
+                "e2e/**",
+                "compat/**",
+                "bin/**"
+            ],
+            "parserOptions": {
+                "ecmaVersion": 2022,
+                "sourceType": "module"
+            },
+            "env": {
+                "node": true,
+                "browser": true
+            }
+        }
+    ],
+    "ignorePatterns": [
+        "node_modules/",
+        "irios-woocommerce/build/",
+        "dist/",
+        "irios-woocommerce/vendor/"
+    ]
+}

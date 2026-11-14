@@ -7,6 +7,7 @@ theme compatibility matrix and translations. The [README](../README.md) is for t
 
 ```
 ├── irios-woocommerce/              # the plugin (what gets installed in WordPress)
+│   ├── assets/js/src/              # the storefront JS, one module per thing it does
 │   ├── irios-woocommerce.php       # plugin header (version 0.0.0-dev: package.sh sets it), autoload
 │   ├── src/                        # PHP: settings, events, identity, consent, banners, REST, update notice…
 │   ├── assets/js/irios-woocommerce.js  # storefront JS (events, ads, banners, live search, ad info)
@@ -82,6 +83,15 @@ and, with `?irios_debug=1`, in the browser console (`[irios-woo] IRIOS Media for
 cd irios-woocommerce
 composer install
 vendor/bin/phpunit
+```
+
+The storefront JS is written as modules in `irios-woocommerce/assets/js/src` and built into
+`assets/js/irios-woocommerce.js`, which is the file WordPress serves and the one committed. Change a module, run the
+build, commit both; CI fails if the committed file is not what the sources build to.
+
+```bash
+npm run build:js    # assets/js/src → assets/js/irios-woocommerce.js
+npm run lint        # eslint over the modules, the tests and the scripts
 ```
 
 Coverage and coding standards, each in its own container so the local PHP is left alone:

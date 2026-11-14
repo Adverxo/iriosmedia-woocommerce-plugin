@@ -1,0 +1,104 @@
+# Every push and every pull request: the same checks the release runs, plus the ones a release cannot fail on its
+# own (the storefront JS, the coverage floors and the WordPress coding standards). A release only happens from a tag,
+# so without this nothing would run while the work is being done.
+name: CI
+
+on:
+  push:
+    branches: ['**']
+    tags-ignore: ['**'] # a tag runs the Release workflow
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  php:
+    name: PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # PHPUnit 11 needs PHP 8.2+; PHP 8.1, the minimum supported, is checked by the syntax job
+        php: ['8.2', '8.4']
+    defaults:
+      run:
+        working-directory: irios-woocommerce
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer
+          coverage: none
+      - run: composer install --no-interaction --no-progress
+      - run: vendor/bin/phpunit
+
+  syntax:
+    name: Syntax on PHP 8.1 (minimum supported)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          coverage: none
+      - run: find irios-woocommerce -path irios-woocommerce/tests -prune -o -name '*.php' -print0 | xargs -0 -n1 php -l
+
+  standards:
+    name: WordPress coding standards
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer
+          coverage: none
+      - run: composer install --no-interaction --no-progress
+        working-directory: irios-woocommerce
+      # Not bin/lint.sh: that one runs it in a container so a developer's own PHP is left alone
+      - run: vendor/bin/phpcs
+        working-directory: irios-woocommerce
+
+  javascript:
+    name: Storefront JS
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm run lint
+      - name: The built file is what the sources build to
+        run: |
+          npm run build:js
+          git diff --exit-code -- irios-woocommerce/assets/js/irios-woocommerce.js \
+            || { echo "assets/js/irios-woocommerce.js is not what assets/js/src builds to: run npm run build:js and commit it" >&2; exit 1; }
+      - run: npm test
+      - name: Coverage of the storefront JS
+        run: bin/coverage-js.sh
+
+  coverage:
+    name: PHP coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer
+          coverage: pcov
+      - run: composer install --no-interaction --no-progress
+        working-directory: irios-woocommerce
+      # Same floor as bin/coverage.sh, measured here without the container that script uses
+      - name: Measure and check the floor
+        working-directory: irios-woocommerce
+        run: |
+          php -d pcov.enabled=1 -d pcov.directory=src vendor/bin/phpunit --coverage-text | tee "$RUNNER_TEMP/coverage.txt"
+          pct="$(grep -oE 'Lines:[[:space:]]+[0-9.]+%' "$RUNNER_TEMP/coverage.txt" | tail -1 | grep -oE '[0-9.]+')"
+          echo "Lines: ${pct}% (minimum ${MIN}%)"
+          awk -v p="$pct" -v m="$MIN" 'BEGIN { exit (p+0 >= m+0) ? 0 : 1 }'
+        env:
+          MIN: '70'

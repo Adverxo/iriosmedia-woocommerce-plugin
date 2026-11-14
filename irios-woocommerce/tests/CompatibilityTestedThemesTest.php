@@ -35,7 +35,7 @@ final class CompatibilityTestedThemesTest extends WordPressTestCase {
 	}
 
 	public function test_a_child_theme_of_a_tested_one_counts_as_tested(): void {
-		$this->given_theme( 'hockeymarket-staging', 'storefront' );
+		$this->given_theme( 'mi-tema-hijo', 'storefront' );
 
 		$this->assertTrue( Compatibility::active_theme_supported() );
 	}
