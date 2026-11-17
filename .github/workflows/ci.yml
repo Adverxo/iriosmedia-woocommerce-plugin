@@ -96,7 +96,8 @@ jobs:
       - name: Measure and check the floor
         working-directory: irios-woocommerce
         run: |
-          php -d pcov.enabled=1 -d pcov.directory=src vendor/bin/phpunit --coverage-text | tee "$RUNNER_TEMP/coverage.txt"
+          # Only the summary: with the per-class lines, "tail -1" below would read the last class, not the total
+          php -d pcov.enabled=1 -d pcov.directory=src vendor/bin/phpunit --coverage-text --only-summary-for-coverage-text | tee "$RUNNER_TEMP/coverage.txt"
           pct="$(grep -oE 'Lines:[[:space:]]+[0-9.]+%' "$RUNNER_TEMP/coverage.txt" | tail -1 | grep -oE '[0-9.]+')"
           echo "Lines: ${pct}% (minimum ${MIN}%)"
           awk -v p="$pct" -v m="$MIN" 'BEGIN { exit (p+0 >= m+0) ? 0 : 1 }'
