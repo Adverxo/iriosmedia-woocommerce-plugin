@@ -31,9 +31,16 @@ if command -v node >/dev/null 2>&1 && [[ -d "$ROOT/node_modules/esbuild" ]]; the
     rm -f "$built"
 fi
 
-rsync -a --exclude vendor --exclude tests --exclude src --exclude build --exclude '.phpunit*' --exclude phpunit.xml.dist \
+# Anchored with a leading /: a bare "src" also matches the plugin's own src/ (all its PHP classes), and 1.1.1 shipped
+# without them. Only the JS sources (assets/js/src, built into assets/js/irios-woocommerce.js) and build/ stay out.
+rsync -a --exclude vendor --exclude tests --exclude /assets/js/src --exclude /build --exclude '.phpunit*' --exclude phpunit.xml.dist \
     --exclude .gitignore \
     "$PLUGIN/" "$BUILD/irios-woocommerce/"
+
+# The zip must carry the plugin's classes and nothing it only needs to be built: a release without them takes down
+# every site that installs it (the classes are loaded on plugins_loaded, front end included)
+[[ -f "$BUILD/irios-woocommerce/src/Plugin.php" ]] || { echo "src/ is missing from the package" >&2; exit 1; }
+[[ ! -e "$BUILD/irios-woocommerce/assets/js/src" ]] || { echo "assets/js/src should not be in the package" >&2; exit 1; }
 
 MAIN="$BUILD/irios-woocommerce/irios-woocommerce.php"
 sed -i.bak -E \

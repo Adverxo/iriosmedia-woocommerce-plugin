@@ -2,6 +2,15 @@
 
 Changes in each version of IRIOS Media for WooCommerce. Download any version from the [releases](../../releases).
 
+## 1.1.2 - 2026-11-17
+
+### Fixed
+
+- 1.1.1 was published without the plugin's own PHP classes, and installing it stopped the whole site with a fatal
+  error (`Class "Irios\WooCommerce\Plugin" not found`), the admin included. If you installed 1.1.1, delete the
+  `irios-woocommerce` folder from `wp-content/plugins` (by FTP or your host's file manager) and install this version.
+  The packaging now refuses to build a zip without them.
+
 ## 1.1.1 - 2026-11-13
 
 ### Added
