@@ -16,7 +16,7 @@ until wp db check >/dev/null 2>&1; do sleep 2; done
 
 if ! wp core is-installed 2>/dev/null; then
     echo "==> Installing WordPress"
-    wp core install --url=http://localhost --title="Tienda Irios" --admin_user=admin --admin_password=admin \
+    wp core install --url=http://localhost --title="Irios store" --admin_user=admin --admin_password=admin \
         --admin_email=admin@example.com --skip-email
     wp language core install es_ES --activate || true
 fi
@@ -70,6 +70,6 @@ fi
 
 echo "==> Configuring the plugin (test Irios domain: nothing reaches a real Irios network)"
 wp option update woocommerce_irios_settings --format=json \
-    '{"enabled":"yes","js_domain":"tracker.irios.test","store_id":"1234","consent_mode":"wp_consent_api","sponsored_enabled":"no","search_ad_unit":"","search_ad_unit_auth":"","max_ads":"4","sponsored_label":"Patrocinado","keep_single_result":"yes"}'
+    '{"enabled":"yes","js_domain":"tracker.irios.test","store_id":"1234","consent_mode":"wp_consent_api","sponsored_enabled":"no","search_ad_unit":"","search_ad_unit_auth":"","max_ads":"4","sponsored_label":"Promoted","keep_single_result":"yes"}'
 
 echo "==> Ready: http://localhost  (admin / admin)"

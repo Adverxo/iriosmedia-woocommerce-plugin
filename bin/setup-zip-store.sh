@@ -24,7 +24,7 @@ until wp db check >/dev/null 2>&1; do sleep 2; done
 
 if ! wp core is-installed 2>/dev/null; then
     echo "==> Installing WordPress"
-    wp core install --url=http://localhost:8089 --title="Tienda zip" --admin_user=admin --admin_password=admin \
+    wp core install --url=http://localhost:8089 --title="Zip store" --admin_user=admin --admin_password=admin \
         --admin_email=admin@example.com --skip-email
     wp language core install es_ES --activate || true
 fi

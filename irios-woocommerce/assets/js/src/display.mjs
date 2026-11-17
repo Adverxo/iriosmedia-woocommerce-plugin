@@ -98,7 +98,7 @@ export function placeBanners() {
 		target.parent.insertBefore( slot, target.before );
 		slot.removeAttribute( 'hidden' );
 		// Centred and spaced from the content (the creative may be narrower than the column).
-		// As a column: the label («Patrocinado ⓘ») above the creative, both centred
+		// As a column: the label ("Sponsored ⓘ") above the creative, both centred
 		slot.style.display = 'flex';
 		slot.style.flexDirection = 'column';
 		slot.style.alignItems = 'center';
@@ -213,7 +213,7 @@ export function labelBanner( slot ) {
 		label.className = 'irios-sponsored-label';
 		label.textContent = cfg.sponsoredLabel || 'Sponsored';
 		// Above the banner, at its top-right corner (same width as the rendered creative) and without wrapping
-		// «Patrocinado ⓘ»
+		// "Sponsored ⓘ"
 		label.style.cssText = 'display:block;white-space:nowrap;text-align:right;font-size:11px;opacity:0.7;margin:0 0 0.25em;box-sizing:border-box;align-self:center;max-width:100%;';
 		var creative = ads[ 0 ].banner || ads[ 0 ].video || {};
 		var width = Number( creative.width );

@@ -25,10 +25,10 @@ final class PushServiceWorkerTest extends WordPressTestCase {
 	}
 
 	public function test_a_store_in_a_subdirectory_keeps_its_own_scope(): void {
-		$this->given_store_at( 'https://example.test/tienda' );
+		$this->given_store_at( 'https://example.test/shop' );
 
-		$this->assertSame( '/tienda/', Push::scope() );
-		$this->assertSame( 'https://example.test/tienda/irios-sw.js', Push::url() );
+		$this->assertSame( '/shop/', Push::scope() );
+		$this->assertSame( 'https://example.test/shop/irios-sw.js', Push::url() );
 	}
 
 	public function test_only_its_own_path_is_served(): void {
@@ -43,9 +43,9 @@ final class PushServiceWorkerTest extends WordPressTestCase {
 	}
 
 	public function test_in_a_subdirectory_the_path_of_the_root_is_not_served(): void {
-		$this->given_store_at( 'https://example.test/tienda' );
+		$this->given_store_at( 'https://example.test/shop' );
 
-		$this->assertTrue( Push::is_service_worker( '/tienda/irios-sw.js' ) );
+		$this->assertTrue( Push::is_service_worker( '/shop/irios-sw.js' ) );
 		$this->assertFalse( Push::is_service_worker( '/irios-sw.js' ) );
 	}
 

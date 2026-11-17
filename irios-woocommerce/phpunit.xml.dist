@@ -4,18 +4,14 @@
          bootstrap="tests/bootstrap.php"
          colors="true"
          failOnWarning="true">
-    <!-- Cobertura: necesita pcov o xdebug. bin/coverage.sh la saca en un contenedor con pcov, sin tocar el PHP local. -->
+    <!-- Coverage needs pcov or xdebug: bin/coverage.sh runs it in a container with pcov and asks for the reports on
+         the command line. No <coverage> reports here: without a driver they are a warning, and failOnWarning would
+         turn every plain run into a failure. -->
     <source>
         <include>
             <directory>src</directory>
         </include>
     </source>
-    <coverage>
-        <report>
-            <html outputDirectory="build/coverage"/>
-            <text outputFile="php://stdout" showOnlySummary="true"/>
-        </report>
-    </coverage>
 
     <testsuites>
         <testsuite name="unit">

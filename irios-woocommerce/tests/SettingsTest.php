@@ -120,15 +120,15 @@ final class SettingsTest extends WordPressTestCase {
 
 	public function test_sponsored_label_never_empty(): void {
 		$this->assertSame( 'Sponsored', ( new Settings( array( 'sponsored_label' => '' ) ) )->sponsored_label() );
-		$this->assertSame( 'Anuncio', ( new Settings( array( 'sponsored_label' => 'Anuncio' ) ) )->sponsored_label() );
+		$this->assertSame( 'Ad', ( new Settings( array( 'sponsored_label' => 'Ad' ) ) )->sponsored_label() );
 	}
 
 
 	public function test_banners_are_resolved_by_tag(): void {
-		$s = new Settings( array( 'banners' => '[{"tag":"home","id":"101","auth":"abc"},{"tag":"categoria-sticks","id":102,"auth":"def"}]' ) );
+		$s = new Settings( array( 'banners' => '[{"tag":"home","id":"101","auth":"abc"},{"tag":"category-sticks","id":102,"auth":"def"}]' ) );
 
 		$this->assertSame( array( 'tag' => 'home', 'format' => 'image', 'type' => 'banner', 'device' => 'all', 'id' => 101, 'auth' => 'abc', 'position' => '' ), $s->banner( 'Home ' ) );
-		$this->assertSame( 102, $s->banner( 'categoria-sticks' )['id'] );
+		$this->assertSame( 102, $s->banner( 'category-sticks' )['id'] );
 		$this->assertNull( $s->banner( 'no-existe' ) );
 		$this->assertSame( array(), ( new Settings( array() ) )->banners() );
 		$this->assertSame( array(), ( new Settings( array( 'banners' => 'not json' ) ) )->banners() );

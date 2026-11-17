@@ -145,7 +145,7 @@ class WC_Product {
 	}
 
 	public function get_description(): string {
-		return 'Descripción del producto ' . $this->id;
+		return 'Description of product ' . $this->id;
 	}
 
 	public function get_date_created() {
@@ -275,7 +275,7 @@ class WC_Customer {
 	}
 
 	public function get_email(): string {
-		return 'cliente' . $this->id . '@example.com';
+		return 'customer' . $this->id . '@example.com';
 	}
 
 	public function get_billing_email(): string {

@@ -5,7 +5,7 @@ Anonymises a WordPress/WooCommerce WXR export before importing it into the Docke
 Usage: python3 -I bin/anonymize-wxr.py <input.xml> <output.xml>
 
 - Orders and refunds: names, company, addresses, email, phone, IP, user agent, customer note, visit origin and payment
-  details are replaced with stable fake data (the same real customer → the same "Cliente N"). Country, state, city and
+  details are replaced with stable fake data (the same real customer → the same "Customer N"). Country, state, city and
   postcode, status, dates, amounts and payment method are kept. Order notes (comments) are removed.
 - Coupons: every "_used_by" (emails / ids of who used them) and the emails in the description are emptied.
 - Contact Form 7 forms: recipients become admin@example.com (the local store does not write to anyone real).
@@ -81,8 +81,8 @@ def main(src, dst):
             for meta in item.findall('wp:postmeta', NS):
                 if meta.find('wp:meta_key', NS).text == '_used_by':
                     set_meta(meta, '')
-            replace_emails(item.find('content:encoded', NS), 'cliente@example.test')
-            replace_emails(item.find('excerpt:encoded', NS), 'cliente@example.test')
+            replace_emails(item.find('content:encoded', NS), 'customer@example.test')
+            replace_emails(item.find('excerpt:encoded', NS), 'customer@example.test')
             coupons += 1
             continue
         if post_type == 'wpcf7_contact_form':
@@ -101,10 +101,10 @@ def main(src, dst):
         n = customers.setdefault(key, len(customers) + 1)
 
         fake = {
-            '_billing_first_name': 'Cliente', '_shipping_first_name': 'Cliente',
+            '_billing_first_name': 'Customer', '_shipping_first_name': 'Customer',
             '_billing_last_name': str(n), '_shipping_last_name': str(n),
             '_billing_address_1': f'Calle Ejemplo {n}', '_shipping_address_1': f'Calle Ejemplo {n}',
-            '_billing_email': f'cliente{n}@example.test',
+            '_billing_email': f'customer{n}@example.test',
             '_billing_phone': f'6{n:08d}', '_shipping_phone': f'6{n:08d}',
             '_customer_ip_address': '127.0.0.1',
         }

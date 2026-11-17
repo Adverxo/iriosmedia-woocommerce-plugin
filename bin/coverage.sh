@@ -13,7 +13,7 @@ MIN=${MIN:-70}
 docker run --rm -v "$PWD":/app -w /app php:8.3-cli sh -c '
     pecl install pcov >/dev/null 2>&1
     docker-php-ext-enable pcov >/dev/null 2>&1
-    php -d pcov.enabled=1 -d pcov.directory=src vendor/bin/phpunit --coverage-text --coverage-php build/coverage.php
+    php -d pcov.enabled=1 -d pcov.directory=src vendor/bin/phpunit --coverage-text --coverage-php build/coverage.php --coverage-html build/coverage
 ' | tee /tmp/irios-coverage.txt
 PCT=$(grep -oE 'Lines:[[:space:]]+[0-9.]+%' /tmp/irios-coverage.txt | tail -1 | grep -oE '[0-9.]+' || echo 0)
 echo "==> Lines: ${PCT}% (minimum ${MIN}%)"

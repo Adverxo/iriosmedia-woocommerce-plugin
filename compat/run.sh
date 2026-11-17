@@ -24,7 +24,7 @@ SETTINGS=$(python3 -I -c '
 import json
 print(json.dumps({
     "enabled": "yes", "js_domain": "tracker.irios.test", "store_id": "1234", "consent_mode": "always",
-    "sponsored_enabled": "yes", "sponsored_label": "Patrocinado", "keep_single_result": "yes",
+    "sponsored_enabled": "yes", "sponsored_label": "Promoted", "keep_single_result": "yes",
     "sponsored_slots": json.dumps([{"position": 1, "id": 9001, "auth": "compat"}]),
     "banners_enabled": "yes",
     "banners": json.dumps([

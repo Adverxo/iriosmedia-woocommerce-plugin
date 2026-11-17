@@ -35,26 +35,26 @@ final class CompatibilityTestedThemesTest extends WordPressTestCase {
 	}
 
 	public function test_a_child_theme_of_a_tested_one_counts_as_tested(): void {
-		$this->given_theme( 'mi-tema-hijo', 'storefront' );
+		$this->given_theme( 'my-child-theme', 'storefront' );
 
 		$this->assertTrue( Compatibility::active_theme_supported() );
 	}
 
 	public function test_an_untested_theme_is_warned_about_with_its_name(): void {
-		$this->given_theme( 'un-tema-cualquiera' );
+		$this->given_theme( 'some-untested-theme' );
 
 		$this->assertFalse( Compatibility::active_theme_supported() );
 		$warning = Compatibility::warning_html();
 		$this->assertStringContainsString( 'notice-warning', $warning );
-		$this->assertStringContainsString( 'un-tema-cualquiera', $warning );
+		$this->assertStringContainsString( 'some-untested-theme', $warning );
 	}
 
 	public function test_the_label_names_the_parent_theme_when_there_is_one(): void {
-		$this->given_theme( 'mi-hijo', 'storefront' );
+		$this->given_theme( 'my-other-child-theme', 'storefront' );
 
 		$label = Compatibility::theme_label();
 
-		$this->assertStringContainsString( 'mi-hijo', $label );
+		$this->assertStringContainsString( 'my-other-child-theme', $label );
 		$this->assertStringContainsString( 'storefront', $label );
 	}
 

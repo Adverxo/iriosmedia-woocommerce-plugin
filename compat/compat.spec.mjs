@@ -88,7 +88,7 @@ test("compatibilidad", async ({ page }) => {
     await check(name, async () => {
       const slot = page.locator(".irios-banner:not([hidden])").first();
       await slot.waitFor({ state: "visible", timeout: 8_000 });
-      // "Patrocinado ⓘ" above the creative, on a single line (the ⓘ right after the text, never below it)
+      // "Promoted ⓘ" above the creative, on a single line (the ⓘ right after the text, never below it)
       const label = slot.locator(".irios-sponsored-label").first();
       await label.waitFor({ state: "visible", timeout: 5_000 });
       const creative = slot.locator("iframe, img, .irios-stub-banner").first();

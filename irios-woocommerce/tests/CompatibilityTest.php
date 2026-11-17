@@ -14,7 +14,7 @@ final class CompatibilityTest extends TestCase {
 	}
 
 	public function test_unknown_theme_is_not_supported(): void {
-		$this->assertFalse( Compatibility::is_supported( 'mi-tema-propio', 'mi-tema-propio' ) );
+		$this->assertFalse( Compatibility::is_supported( 'my-own-theme', 'my-own-theme' ) );
 	}
 
 	public function test_a_child_theme_counts_as_its_parent(): void {

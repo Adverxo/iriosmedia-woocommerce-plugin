@@ -47,7 +47,7 @@ export const CONFIG = {
   restNonce: "nonce",
   cardsUrl: `${ORIGIN}/wp-json/irios/v1/cards`,
   storeApiUrl: `${ORIGIN}/wp-json/wc/store/v1/`,
-  sponsoredLabel: "Patrocinado",
+  sponsoredLabel: "Promoted",
   currency: "EUR",
   productBase: "/product/",
   liveSearchAds: null,

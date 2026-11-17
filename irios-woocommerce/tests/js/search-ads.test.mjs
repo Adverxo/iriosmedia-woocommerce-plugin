@@ -73,7 +73,7 @@ describe("search ads", () => {
     const { document } = search({ winners: [winner(UNIT, 1, 7)] });
     await settle();
     const label = document.querySelector(".irios-sponsored .irios-sponsored-label");
-    expect(label.textContent).toContain("Patrocinado");
+    expect(label.textContent).toContain("Promoted");
     expect(label.querySelector(".irios-ad-info")).not.toBeNull();
   });
 

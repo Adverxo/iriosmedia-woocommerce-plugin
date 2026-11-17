@@ -39,14 +39,14 @@ final class AssetsConfigTest extends WordPressTestCase {
 				'js_domain'       => 'shop.iriosmedia.online',
 				'store_id'        => '33',
 				'consent_mode'    => Settings::CONSENT_ASESOR_COOKIES,
-				'sponsored_label' => 'Patrocinado',
+				'sponsored_label' => 'Promoted',
 			)
 		);
 
 		$this->assertSame( 'shop.iriosmedia.online', $config['jsDomain'] );
 		$this->assertSame( '33', $config['storeId'] );
 		$this->assertSame( Settings::CONSENT_ASESOR_COOKIES, $config['consentMode'] );
-		$this->assertSame( 'Patrocinado', $config['sponsoredLabel'] );
+		$this->assertSame( 'Promoted', $config['sponsoredLabel'] );
 		$this->assertSame( 'https://shop.test/wp-json/irios/v1/context', $config['contextUrl'] );
 		$this->assertSame( 'https://shop.test/wp-json/irios/v1/cards', $config['cardsUrl'] );
 	}

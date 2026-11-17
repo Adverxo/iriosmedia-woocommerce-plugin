@@ -8,7 +8,7 @@ import { loadLoader, revealResults } from './tracker.mjs';
 /**
  * Native ads in search: the auction is requested with IriosLoader and the ads are read with getAds() (API
  * documented at doc.iriosmedia.com, "Retrieving ads without rendering"), without render(); the winning products'
- * cards are inserted at the top of the results with the "Patrocinado" label:
+ * cards are inserted at the top of the results with the "Sponsored" label:
  *   - with a shop grid (.products or template block), the theme renders the card (GET irios/v1/cards);
  *   - if the theme shows search results differently (e.g. as blog posts), the
  *     results are found by their links (page.ads.results) and one is cloned, swapping link, image, title, excerpt and
