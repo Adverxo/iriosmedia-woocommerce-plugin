@@ -10,7 +10,7 @@ namespace Irios\WooCommerce;
  */
 final class Updates {
 
-	public const REPOSITORY = 'Adverxo/iriosmedia-woocommerce-plugin';
+	public const REPOSITORY = 'IRIOSMedia/iriosmedia-woocommerce-plugin';
 	/** Release asset with a fixed name (see .github/workflows/release.yml). */
 	public const ZIP_ASSET = 'irios-woocommerce.zip';
 

@@ -55,9 +55,9 @@ export function inGridTarget() {
 }
 
 /**
- * Places auto-positioned banners (printed hidden in the footer), centred: at the end of the category listing
- * (after the grid and its sorting and pagination controls), or before the product page tabs (the
- * description being the first). If there is no spot, the slot is removed.
+ * Places auto-positioned banners (printed hidden in the footer), centred: right above the category listing (after
+ * its result count and sorting), at the end of it (after the grid and its sorting and pagination controls), or before
+ * the product page tabs (the description being the first). If there is no spot, the slot is removed.
  */
 export function placeBanners() {
 	Array.prototype.forEach.call( document.querySelectorAll( '.irios-banner[data-irios-position]' ), function ( slot ) {
@@ -69,8 +69,13 @@ export function placeBanners() {
 			return;
 		}
 		if ( position === 'category_sidebar' ) {
+			// At the end of the sidebar, below its widgets (the filters): they stay where the shopper expects them
 			var sidebar = document.querySelector( SIDEBAR_SELECTOR );
-			target = sidebar && { parent: sidebar, before: sidebar.firstChild };
+			target = sidebar && { parent: sidebar, before: null };
+		} else if ( position === 'category_before_products' ) {
+			// Right above the grid, after the result count and the sorting: the opposite of category_after_products
+			var first = findGrid();
+			target = first && { parent: first.parentNode, before: first };
 		} else if ( position === 'category_in_grid' ) {
 			target = inGridTarget();
 		} else if ( position === 'product_before_related' ) {

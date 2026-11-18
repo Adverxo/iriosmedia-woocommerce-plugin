@@ -835,7 +835,10 @@
       }
       if (position === "category_sidebar") {
         var sidebar = document.querySelector(SIDEBAR_SELECTOR);
-        target = sidebar && { parent: sidebar, before: sidebar.firstChild };
+        target = sidebar && { parent: sidebar, before: null };
+      } else if (position === "category_before_products") {
+        var first = findGrid();
+        target = first && { parent: first.parentNode, before: first };
       } else if (position === "category_in_grid") {
         target = inGridTarget();
       } else if (position === "product_before_related") {

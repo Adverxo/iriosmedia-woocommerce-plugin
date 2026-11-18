@@ -37,7 +37,7 @@ final class SettingsTest extends WordPressTestCase {
 	}
 
 	public function test_unknown_consent_mode_falls_back_to_consent_api(): void {
-		$this->assertSame( Settings::CONSENT_WP_CONSENT_API, ( new Settings( array( 'consent_mode' => 'nunca' ) ) )->consent_mode() );
+		$this->assertSame( Settings::CONSENT_WP_CONSENT_API, ( new Settings( array( 'consent_mode' => 'never' ) ) )->consent_mode() );
 	}
 
 	public function test_non_numeric_store_is_not_configured(): void {
@@ -162,8 +162,28 @@ final class SettingsTest extends WordPressTestCase {
 		);
 
 		$this->assertSame( array( 'video', 'banner', 'banner' ), array_column( $result['banners'], 'type' ) );
-		$this->assertSame( array( 'desktop', 'mobile', 'all' ), array_column( $result['banners'], 'device' ) );
+		// The sidebar row saved for all devices (before it was desktop only) is read as desktop
+		$this->assertSame( array( 'desktop', 'mobile', 'desktop' ), array_column( $result['banners'], 'device' ) );
 		$this->assertCount( 2, $result['errors'] );
+	}
+
+	public function test_the_category_sidebar_is_desktop_only(): void {
+		$rows = array(
+			array( 'tag' => 'side-all', 'device' => 'all', 'id' => '1', 'auth' => 'a', 'position' => Settings::POSITION_CATEGORY_SIDEBAR ),
+			array( 'tag' => 'side-mobile', 'device' => 'mobile', 'id' => '2', 'auth' => 'b', 'position' => Settings::POSITION_CATEGORY_SIDEBAR ),
+			array( 'tag' => 'side-desktop', 'device' => 'desktop', 'id' => '3', 'auth' => 'c', 'position' => Settings::POSITION_CATEGORY_SIDEBAR ),
+		);
+
+		// Saving: only the desktop row
+		$saved = Settings::sanitize_banners( $rows, true );
+		$this->assertSame( array( 'side-desktop' ), array_column( $saved['banners'], 'tag' ) );
+		$this->assertCount( 2, $saved['errors'] );
+		$this->assertStringContainsString( 'only shown on desktop', $saved['errors'][0] );
+
+		// Reading what was stored: the one for all devices keeps working on desktop, the mobile one never shows
+		$read = Settings::sanitize_banners( $rows );
+		$this->assertSame( array( 'side-all', 'side-desktop' ), array_column( $read['banners'], 'tag' ) );
+		$this->assertSame( array( 'desktop', 'desktop' ), array_column( $read['banners'], 'device' ) );
 	}
 
 	public function test_enable_irios_media_switch(): void {
@@ -209,7 +229,7 @@ final class SettingsTest extends WordPressTestCase {
 	}
 
 	public function test_unknown_banner_position_is_an_error(): void {
-		$result = Settings::sanitize_banners( array( array( 'tag' => 'x', 'id' => '1', 'auth' => 'a', 'position' => 'cabecera' ) ) );
+		$result = Settings::sanitize_banners( array( array( 'tag' => 'x', 'id' => '1', 'auth' => 'a', 'position' => 'header' ) ) );
 
 		$this->assertSame( array(), $result['banners'] );
 		$this->assertCount( 1, $result['errors'] );

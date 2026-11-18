@@ -9,8 +9,8 @@ WordPress plugin that connects a WooCommerce store with **IRIOS Media**:
   service reads them, only with consent, through the plugin's own API (see below).
 - **Sponsored Products** (optional): product ads in the search results and in the theme's live search, rendered with
   the store's own product card and an ad label ("Sponsored").
-- **Display** (optional): image and video ads through a shortcode or at automatic positions (category: sidebar, inside
-  the grid, after the products; product page: before the description, before the related products), per device.
+- **Display** (optional): image and video ads through a shortcode or at automatic positions (category: sidebar, above
+  the grid, inside it, after the products; product page: before the description, before the related products), per device.
 - **Push Notifications** (optional): brand notifications for the shoppers who subscribe in their browser, asked after
   a purchase or after a number of pages, only with consent.
 - **Ad transparency** (EU Digital Services Act, art. 26): an info button next to every ad label opens "About this
@@ -124,7 +124,9 @@ from 768 px wide, or mobile: the same spot can have one row per device, with ad 
 
 - **Manual only**: shown wherever `[irios_display tag="TAG"]` is placed (a page, the home page, a page-builder
   element, a block, a widget or a category description). `[irios_banner]`, its name in 1.0, still works.
-- **Category: sidebar**: at the top of the shop sidebar.
+- **Category: sidebar**: at the end of the shop sidebar, below its widgets (the filters). Desktop only: on phones the
+  sidebar is a filter panel or far below the products, so a sidebar placement must have the device Desktop.
+- **Category: top**: right above the product grid, after the result count and the sorting, centred.
 - **Category: in grid**: inside the product grid, the full width of it, after the product set in
   **Grid: after product** (6 by default).
 - **Category: bottom**: below the product grid and its sorting and pagination controls, centred.

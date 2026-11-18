@@ -62,7 +62,7 @@ PHP 8.1), checks that `CHANGELOG.md` has notes for the version (no notes, no rel
 downloads the latest version:
 
 ```
-https://github.com/Adverxo/iriosmedia-woocommerce-plugin/releases/latest/download/irios-woocommerce.zip
+https://github.com/IRIOSMedia/iriosmedia-woocommerce-plugin/releases/latest/download/irios-woocommerce.zip
 ```
 
 If the workflow fails, delete the tag, fix and tag again:

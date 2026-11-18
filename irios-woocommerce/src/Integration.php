@@ -248,6 +248,7 @@ final class Integration extends \WC_Integration {
 			$positions = array(
 				Settings::POSITION_NONE                       => __( 'Manual only', 'irios-woocommerce' ),
 				Settings::POSITION_CATEGORY_SIDEBAR           => __( 'Category: sidebar', 'irios-woocommerce' ),
+				Settings::POSITION_CATEGORY_BEFORE_PRODUCTS   => __( 'Category: top', 'irios-woocommerce' ),
 				Settings::POSITION_CATEGORY_IN_GRID           => __( 'Category: in grid', 'irios-woocommerce' ),
 				Settings::POSITION_CATEGORY_AFTER_PRODUCTS    => __( 'Category: bottom', 'irios-woocommerce' ),
 				Settings::POSITION_PRODUCT_BEFORE_DESCRIPTION => __( 'Product: description', 'irios-woocommerce' ),
@@ -276,7 +277,7 @@ final class Integration extends \WC_Integration {
 			$cells,
 			$banners,
 			__( 'Add placement', 'irios-woocommerce' ),
-			__( 'Tag in lowercase, without spaces (e.g. home, category-sticks). Format: that of the ad unit in IRIOS Media. Device: the same spot can have one row per device (desktop from 768 px wide). Position: Manual only, with [irios_display tag="TAG"] anywhere on the site (also the home page), or automatic: category sidebar, inside the category grid, after the category products, before the product description or before the related products.', 'irios-woocommerce' )
+			__( 'Tag in lowercase, without spaces (e.g. home, category-sticks). Format: that of the ad unit in IRIOS Media. Device: the same spot can have one row per device (desktop from 768 px wide). Position: Manual only, with [irios_display tag="TAG"] anywhere on the site (also the home page), or automatic: category sidebar (desktop only), above the category grid, inside it, after the category products, before the product description or before the related products.', 'irios-woocommerce' )
 		);
 	}
 
@@ -413,7 +414,7 @@ final class Integration extends \WC_Integration {
 	/** @param string $key @param mixed $value Rows of the banners table. */
 	public function validate_banners_field( $key, $value ): string {
 		$rows   = is_array( $value ) ? array_values( array_filter( $value, 'is_array' ) ) : array();
-		$result = Settings::sanitize_banners( wp_unslash( $rows ) );
+		$result = Settings::sanitize_banners( wp_unslash( $rows ), true );
 		foreach ( $result['errors'] as $error ) {
 			\WC_Admin_Settings::add_error( 'IRIOS Media: ' . $error );
 		}

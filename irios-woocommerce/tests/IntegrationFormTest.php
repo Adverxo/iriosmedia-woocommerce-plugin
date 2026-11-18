@@ -72,13 +72,13 @@ final class IntegrationFormTest extends WordPressTestCase {
 	public function test_the_table_of_placements_offers_every_shared_position(): void {
 		$this->integration->settings = array(
 			'banners' => (string) json_encode(
-				array( array( 'tag' => 'portada', 'id' => 3260, 'auth' => 'abc', 'position' => Settings::POSITION_CATEGORY_AFTER_PRODUCTS ) )
+				array( array( 'tag' => 'home', 'id' => 3260, 'auth' => 'abc', 'position' => Settings::POSITION_CATEGORY_AFTER_PRODUCTS ) )
 			),
 		);
 
 		$html = $this->integration->generate_irios_banners_html( 'banners', array( 'title' => 'Placements' ) );
 
-		$this->assertStringContainsString( 'value="portada"', $html );
+		$this->assertStringContainsString( 'value="home"', $html );
 		foreach ( Settings::POSITIONS as $position ) {
 			$this->assertStringContainsString( 'value="' . $position . '"', $html, "the position «{$position}» can be chosen" );
 		}

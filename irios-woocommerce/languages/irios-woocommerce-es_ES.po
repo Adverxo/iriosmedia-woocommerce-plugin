@@ -248,7 +248,7 @@ msgstr "Notificaciones de marca para los compradores que se suscriban en su nave
 msgid "Ask shoppers to subscribe to IRIOS Media push notifications"
 msgstr "Pedir a los compradores que se suscriban a las notificaciones push de IRIOS Media"
 
-#: src/Integration.php:149 src/Integration.php:272 src/Integration.php:311
+#: src/Integration.php:149 src/Integration.php:273 src/Integration.php:312
 msgid "Ad unit ID"
 msgstr "ID del ad unit"
 
@@ -293,106 +293,110 @@ msgid "Category: sidebar"
 msgstr "Categoría: barra lateral"
 
 #: src/Integration.php:251
+msgid "Category: top"
+msgstr "Categoría: arriba"
+
+#: src/Integration.php:252
 msgid "Category: in grid"
 msgstr "Categoría: en la rejilla"
 
-#: src/Integration.php:252
+#: src/Integration.php:253
 msgid "Category: bottom"
 msgstr "Categoría: al final"
 
-#: src/Integration.php:253
+#: src/Integration.php:254
 msgid "Product: description"
 msgstr "Producto: descripción"
 
-#: src/Integration.php:254
+#: src/Integration.php:255
 msgid "Product: related"
 msgstr "Producto: relacionados"
 
-#: src/Integration.php:257
+#: src/Integration.php:258
 msgid "home"
 msgstr "portada"
 
-#: src/Integration.php:258
+#: src/Integration.php:259
 msgid "Image"
 msgstr "Imagen"
 
-#: src/Integration.php:258
+#: src/Integration.php:259
 msgid "Video"
 msgstr "Vídeo"
 
-#: src/Integration.php:259
+#: src/Integration.php:260
 msgid "All"
 msgstr "Todos"
 
-#: src/Integration.php:259
+#: src/Integration.php:260
 msgid "Desktop"
 msgstr "Escritorio"
 
-#: src/Integration.php:259
+#: src/Integration.php:260
 msgid "Mobile"
 msgstr "Móvil"
 
-#: src/Integration.php:261 src/Integration.php:303
+#: src/Integration.php:262 src/Integration.php:304
 msgid "ad unit auth"
 msgstr "auth del ad unit"
 
-#: src/Integration.php:269
+#: src/Integration.php:270
 msgid "Tag"
 msgstr "Etiqueta"
 
-#: src/Integration.php:270
+#: src/Integration.php:271
 msgid "Format"
 msgstr "Formato"
 
-#: src/Integration.php:271
+#: src/Integration.php:272
 msgid "Device"
 msgstr "Dispositivo"
 
-#: src/Integration.php:273 src/Integration.php:312
+#: src/Integration.php:274 src/Integration.php:313
 msgid "Auth"
 msgstr "Auth"
 
-#: src/Integration.php:274 src/Integration.php:310
+#: src/Integration.php:275 src/Integration.php:311
 msgid "Position"
 msgstr "Posición"
 
-#: src/Integration.php:278
+#: src/Integration.php:279
 msgid "Add placement"
 msgstr "Añadir hueco"
 
-#: src/Integration.php:279
-msgid "Tag in lowercase, without spaces (e.g. home, category-sticks). Format: that of the ad unit in IRIOS Media. Device: the same spot can have one row per device (desktop from 768 px wide). Position: Manual only, with [irios_display tag=\"TAG\"] anywhere on the site (also the home page), or automatic: category sidebar, inside the category grid, after the category products, before the product description or before the related products."
-msgstr "Etiqueta en minúsculas y sin espacios (por ejemplo portada, categoria-sticks). Formato: el del ad unit en IRIOS Media. Dispositivo: un mismo sitio puede tener una fila por dispositivo (escritorio a partir de 768 px de ancho). Posición: solo manual, con [irios_display tag=\"ETIQUETA\"] en cualquier parte del sitio (también en la portada), o automática: barra lateral de la categoría, dentro de la rejilla de la categoría, tras los productos de la categoría, antes de la descripción del producto o antes de los productos relacionados."
+#: src/Integration.php:280
+msgid "Tag in lowercase, without spaces (e.g. home, category-sticks). Format: that of the ad unit in IRIOS Media. Device: the same spot can have one row per device (desktop from 768 px wide). Position: Manual only, with [irios_display tag=\"TAG\"] anywhere on the site (also the home page), or automatic: category sidebar (desktop only), above the category grid, inside it, after the category products, before the product description or before the related products."
+msgstr "Etiqueta en minúsculas y sin espacios (por ejemplo portada, categoria-sticks). Formato: el del ad unit en IRIOS Media. Dispositivo: un mismo sitio puede tener una fila por dispositivo (escritorio a partir de 768 px de ancho). Posición: solo manual, con [irios_display tag=\"ETIQUETA\"] en cualquier parte del sitio (también en la portada), o automática: barra lateral de la categoría (solo escritorio), encima de la rejilla de la categoría, dentro de ella, tras los productos de la categoría, antes de la descripción del producto o antes de los productos relacionados."
 
-#: src/Integration.php:316
+#: src/Integration.php:317
 msgid "Add position"
 msgstr "Añadir posición"
 
-#: src/Integration.php:317
+#: src/Integration.php:318
 msgid "One ad per row. The position is the place in the results grid: 1 is top left, counted in reading order (left to right, row by row). The same ad unit can take several positions. In the live search dropdown there is at most one ad, at the top: the one of the lowest position."
 msgstr "Un anuncio por fila. La posición es el lugar en la rejilla de resultados: 1 es arriba a la izquierda, contando en orden de lectura (de izquierda a derecha, fila a fila). Un mismo ad unit puede ocupar varias posiciones. En el desplegable del buscador hay como mucho un anuncio, arriba del todo: el de la posición más baja."
 
-#: src/Integration.php:346
+#: src/Integration.php:347
 msgid "Remove"
 msgstr "Quitar"
 
-#: src/Integration.php:428
+#: src/Integration.php:429
 msgid "IRIOS Media: to show Sponsored Products, add at least one position with its ad unit and auth. Until then, no ads are shown."
 msgstr "IRIOS Media: para mostrar productos patrocinados, añade al menos una posición con su ad unit y su auth. Hasta entonces no se muestra ningún anuncio."
 
-#: src/Integration.php:431
+#: src/Integration.php:432
 msgid "IRIOS Media: to ask for push notifications, add the push ad unit and its auth. Until then, nothing is asked."
 msgstr "IRIOS Media: para pedir notificaciones push, añade el ad unit de push y su auth. Hasta entonces no se pide nada."
 
-#: src/Integration.php:441
+#: src/Integration.php:442
 msgid "IRIOS Media: the IRIOS Media domain is not valid."
 msgstr "IRIOS Media: el dominio de IRIOS Media no es válido."
 
-#: src/Integration.php:449
+#: src/Integration.php:450
 msgid "IRIOS Media: the push Ad unit ID must be a number."
 msgstr "IRIOS Media: el ID del ad unit de push tiene que ser un número."
 
-#: src/Integration.php:472
+#: src/Integration.php:473
 msgid "IRIOS Media: the Store ID must be a number."
 msgstr "IRIOS Media: el ID de tienda tiene que ser un número."
 
@@ -443,6 +447,11 @@ msgstr "Hueco «%1$s»: formato desconocido «%2$s»"
 #, php-format
 msgid "Placement \"%1$s\": unknown device \"%2$s\""
 msgstr "Hueco «%1$s»: dispositivo desconocido «%2$s»"
+
+#: src/Settings.php
+#, php-format
+msgid "Placement \"%s\": the category sidebar is only shown on desktop, set its device to Desktop"
+msgstr "Hueco «%s»: la barra lateral de la categoría solo se muestra en escritorio; pon su dispositivo en Escritorio"
 
 #. translators: %s: banner tag
 #: src/Settings.php:232

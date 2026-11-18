@@ -2,6 +2,24 @@
 
 Changes in each version of IRIOS Media for WooCommerce. Download any version from the [releases](../../releases).
 
+## Unreleased
+
+### Added
+
+- Display: new automatic position **Category: top**, right above the product grid (after the result count and the
+  sorting), the opposite of "Category: bottom". It is where most retailers place their banners in a listing.
+
+### Changed
+
+- The repository moved to the **IRIOSMedia** organization on GitHub: the update check and the `Update URI` header point
+  to `IRIOSMedia/iriosmedia-woocommerce-plugin`. Earlier versions keep finding updates through GitHub's redirect from
+  the old address.
+- Display: the "Category: sidebar" placement goes at the end of the shop sidebar, below its widgets, instead of at
+  the top: the filters stay where the shopper expects them.
+- Display: "Category: sidebar" is desktop only. A sidebar placement for all devices or for mobile is not saved (on
+  phones the sidebar is a filter panel or far below the products, so the ad would be requested and not seen); one
+  saved for all devices before this version keeps working, on desktop only.
+
 ## 1.1.2 - 2026-11-17
 
 ### Fixed

@@ -106,14 +106,14 @@ final class IntegrationValidationTest extends WordPressTestCase {
 
 	public function test_the_display_placements_are_saved_as_json_and_the_wrong_rows_are_dropped(): void {
 		$rows = array(
-			array( 'tag' => 'portada', 'id' => '3260', 'auth' => 'abc', 'position' => '' ),
-			array( 'tag' => 'PORTADA MAL', 'id' => '3261', 'auth' => 'def', 'position' => '' ), // tag with spaces and capitals
+			array( 'tag' => 'home', 'id' => '3260', 'auth' => 'abc', 'position' => '' ),
+			array( 'tag' => 'BAD HOME', 'id' => '3261', 'auth' => 'def', 'position' => '' ), // tag with spaces and capitals
 		);
 
 		$saved = json_decode( $this->integration->validate_banners_field( 'banners', $rows ), true );
 
 		$this->assertCount( 1, $saved );
-		$this->assertSame( 'portada', $saved[0]['tag'] );
+		$this->assertSame( 'home', $saved[0]['tag'] );
 		$this->assertCount( 1, $this->errors() );
 	}
 

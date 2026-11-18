@@ -251,7 +251,7 @@ msgstr ""
 msgid "Ask shoppers to subscribe to IRIOS Media push notifications"
 msgstr ""
 
-#: src/Integration.php:149 src/Integration.php:272 src/Integration.php:311
+#: src/Integration.php:149 src/Integration.php:273 src/Integration.php:312
 msgid "Ad unit ID"
 msgstr ""
 
@@ -296,106 +296,110 @@ msgid "Category: sidebar"
 msgstr ""
 
 #: src/Integration.php:251
-msgid "Category: in grid"
+msgid "Category: top"
 msgstr ""
 
 #: src/Integration.php:252
-msgid "Category: bottom"
+msgid "Category: in grid"
 msgstr ""
 
 #: src/Integration.php:253
-msgid "Product: description"
+msgid "Category: bottom"
 msgstr ""
 
 #: src/Integration.php:254
+msgid "Product: description"
+msgstr ""
+
+#: src/Integration.php:255
 msgid "Product: related"
 msgstr ""
 
-#: src/Integration.php:257
+#: src/Integration.php:258
 msgid "home"
 msgstr ""
 
-#: src/Integration.php:258
+#: src/Integration.php:259
 msgid "Image"
 msgstr ""
 
-#: src/Integration.php:258
+#: src/Integration.php:259
 msgid "Video"
 msgstr ""
 
-#: src/Integration.php:259
+#: src/Integration.php:260
 msgid "All"
 msgstr ""
 
-#: src/Integration.php:259
+#: src/Integration.php:260
 msgid "Desktop"
 msgstr ""
 
-#: src/Integration.php:259
+#: src/Integration.php:260
 msgid "Mobile"
 msgstr ""
 
-#: src/Integration.php:261 src/Integration.php:303
+#: src/Integration.php:262 src/Integration.php:304
 msgid "ad unit auth"
 msgstr ""
 
-#: src/Integration.php:269
+#: src/Integration.php:270
 msgid "Tag"
 msgstr ""
 
-#: src/Integration.php:270
+#: src/Integration.php:271
 msgid "Format"
 msgstr ""
 
-#: src/Integration.php:271
+#: src/Integration.php:272
 msgid "Device"
 msgstr ""
 
-#: src/Integration.php:273 src/Integration.php:312
+#: src/Integration.php:274 src/Integration.php:313
 msgid "Auth"
 msgstr ""
 
-#: src/Integration.php:274 src/Integration.php:310
+#: src/Integration.php:275 src/Integration.php:311
 msgid "Position"
 msgstr ""
 
-#: src/Integration.php:278
+#: src/Integration.php:279
 msgid "Add placement"
 msgstr ""
 
-#: src/Integration.php:279
-msgid "Tag in lowercase, without spaces (e.g. home, category-sticks). Format: that of the ad unit in IRIOS Media. Device: the same spot can have one row per device (desktop from 768 px wide). Position: Manual only, with [irios_display tag=\"TAG\"] anywhere on the site (also the home page), or automatic: category sidebar, inside the category grid, after the category products, before the product description or before the related products."
-msgstr ""
-
-#: src/Integration.php:316
-msgid "Add position"
+#: src/Integration.php:280
+msgid "Tag in lowercase, without spaces (e.g. home, category-sticks). Format: that of the ad unit in IRIOS Media. Device: the same spot can have one row per device (desktop from 768 px wide). Position: Manual only, with [irios_display tag=\"TAG\"] anywhere on the site (also the home page), or automatic: category sidebar (desktop only), above the category grid, inside it, after the category products, before the product description or before the related products."
 msgstr ""
 
 #: src/Integration.php:317
+msgid "Add position"
+msgstr ""
+
+#: src/Integration.php:318
 msgid "One ad per row. The position is the place in the results grid: 1 is top left, counted in reading order (left to right, row by row). The same ad unit can take several positions. In the live search dropdown there is at most one ad, at the top: the one of the lowest position."
 msgstr ""
 
-#: src/Integration.php:346
+#: src/Integration.php:347
 msgid "Remove"
 msgstr ""
 
-#: src/Integration.php:428
+#: src/Integration.php:429
 msgid "IRIOS Media: to show Sponsored Products, add at least one position with its ad unit and auth. Until then, no ads are shown."
 msgstr ""
 
-#: src/Integration.php:431
+#: src/Integration.php:432
 msgid "IRIOS Media: to ask for push notifications, add the push ad unit and its auth. Until then, nothing is asked."
 msgstr ""
 
-#: src/Integration.php:441
+#: src/Integration.php:442
 msgid "IRIOS Media: the IRIOS Media domain is not valid."
 msgstr ""
 
-#: src/Integration.php:449
+#: src/Integration.php:450
 msgid "IRIOS Media: the push Ad unit ID must be a number."
 msgstr ""
 
-#: src/Integration.php:472
+#: src/Integration.php:473
 msgid "IRIOS Media: the Store ID must be a number."
 msgstr ""
 
@@ -445,6 +449,11 @@ msgstr ""
 #: src/Settings.php:223
 #, php-format
 msgid "Placement \"%1$s\": unknown device \"%2$s\""
+msgstr ""
+
+#: src/Settings.php
+#, php-format
+msgid "Placement \"%s\": the category sidebar is only shown on desktop, set its device to Desktop"
 msgstr ""
 
 #. translators: %s: banner tag

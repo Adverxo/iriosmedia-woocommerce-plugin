@@ -8,7 +8,7 @@
  * Requires Plugins:     woocommerce
  * WC requires at least: 8.5
  * Author:               Kimia / Adverxo
- * Update URI:           https://github.com/Adverxo/iriosmedia-woocommerce-plugin
+ * Update URI:           https://github.com/IRIOSMedia/iriosmedia-woocommerce-plugin
  * Text Domain:          irios-woocommerce
  * Domain Path:          /languages
  * License:              GPL-2.0-or-later

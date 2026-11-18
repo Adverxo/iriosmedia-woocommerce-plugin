@@ -40,6 +40,22 @@ describe("Display", () => {
     expect(store.log.auctions[0].adUnits.map((u) => u.id)).toEqual([2, 3]);
   });
 
+  it("category: right above the grid, after its result count and sorting", async () => {
+    store = storefront({
+      page: { type: "category", pageType: "CATEGORY", category: ["Sticks"] },
+      config: { bannersEnabled: "1" },
+      body:
+        `<p class="woocommerce-result-count">4 results</p><form class="woocommerce-ordering"></form><ul class="products">${products(4)}</ul>` +
+        '<div class="irios-banner" data-ad-unit="4" data-auth="d" data-irios-position="category_before_products" hidden></div>',
+    });
+    await settle();
+    const doc = store.window.document;
+    const slot = doc.querySelector('.irios-banner[data-ad-unit="4"]');
+    expect(slot.nextElementSibling.matches("ul.products")).toBe(true);
+    expect(slot.previousElementSibling.matches("form.woocommerce-ordering")).toBe(true);
+    expect(store.log.auctions[0].adUnits.map((u) => u.id)).toEqual([4]);
+  });
+
   it("category: inside the grid after product N (full width), in the sidebar and after the products", async () => {
     store = storefront({
       page: { type: "category", pageType: "CATEGORY", category: ["Sticks"] },
@@ -57,7 +73,7 @@ describe("Display", () => {
     expect(item.className).toBe("irios-banner-grid-item");
     expect(item.tagName).toBe("LI");
     expect(item.querySelector('.irios-banner[data-ad-unit="1"]')).not.toBeNull();
-    expect(doc.querySelector("#secondary").firstElementChild.getAttribute("data-ad-unit")).toBe("2");
+    expect(doc.querySelector("#secondary").lastElementChild.getAttribute("data-ad-unit")).toBe("2");
     expect(grid.nextElementSibling.getAttribute("data-ad-unit")).toBe("3");
     expect(store.log.auctions[0].adUnits.map((u) => u.id)).toEqual([1, 2, 3]);
   });

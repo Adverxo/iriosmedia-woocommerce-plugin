@@ -21,6 +21,7 @@ final class Settings {
 	 */
 	public const POSITION_NONE                       = '';
 	public const POSITION_CATEGORY_SIDEBAR           = 'category_sidebar';
+	public const POSITION_CATEGORY_BEFORE_PRODUCTS   = 'category_before_products';
 	public const POSITION_CATEGORY_IN_GRID           = 'category_in_grid';
 	public const POSITION_CATEGORY_AFTER_PRODUCTS    = 'category_after_products';
 	public const POSITION_PRODUCT_BEFORE_DESCRIPTION = 'product_before_description';
@@ -28,12 +29,13 @@ final class Settings {
 	public const POSITIONS                           = array(
 		self::POSITION_NONE,
 		self::POSITION_CATEGORY_SIDEBAR,
+		self::POSITION_CATEGORY_BEFORE_PRODUCTS,
 		self::POSITION_CATEGORY_IN_GRID,
 		self::POSITION_CATEGORY_AFTER_PRODUCTS,
 		self::POSITION_PRODUCT_BEFORE_DESCRIPTION,
 		self::POSITION_PRODUCT_BEFORE_RELATED,
 	);
-	public const CATEGORY_POSITIONS = array( self::POSITION_CATEGORY_SIDEBAR, self::POSITION_CATEGORY_IN_GRID, self::POSITION_CATEGORY_AFTER_PRODUCTS );
+	public const CATEGORY_POSITIONS = array( self::POSITION_CATEGORY_SIDEBAR, self::POSITION_CATEGORY_BEFORE_PRODUCTS, self::POSITION_CATEGORY_IN_GRID, self::POSITION_CATEGORY_AFTER_PRODUCTS );
 	public const PRODUCT_POSITIONS  = array( self::POSITION_PRODUCT_BEFORE_DESCRIPTION, self::POSITION_PRODUCT_BEFORE_RELATED );
 
 	/**
@@ -160,7 +162,7 @@ final class Settings {
 		return $this->banners;
 	}
 
-	/** Banner by its tag ([irios_banner tag="portada"]), case-insensitive; null if it does not exist. */
+	/** Banner by its tag ([irios_banner tag="home"]), case-insensitive; null if it does not exist. */
 	public function banner( string $tag ): ?array {
 		$tag = strtolower( trim( $tag ) );
 		foreach ( $this->banners() as $banner ) {
@@ -193,12 +195,16 @@ final class Settings {
 	/**
 	 * Validates the Display rows from the settings screen: short (a-z, 0-9, - and _) unique tag, format (image or
 	 * video; image when missing, as rows saved by 1.0), device (all when missing), required numeric id and auth, and
-	 * optional automatic position. Empty rows are ignored; invalid ones are dropped with their error.
+	 * optional automatic position. Empty rows are ignored; invalid ones are dropped with their error. The category
+	 * sidebar is a desktop-only spot (on phones it is usually a filter panel or far below the products): a sidebar row
+	 * is for desktop. When saving, any other device is an error; a stored row for all devices, saved before this rule,
+	 * is read as desktop.
 	 *
 	 * @param array<int,array<string,mixed>> $rows
+	 * @param bool                           $for_save Validating what is about to be saved.
 	 * @return array{banners:array<int,array{tag:string,format:string,type:string,device:string,id:int,auth:string,position:string}>,errors:string[]}
 	 */
-	public static function sanitize_banners( array $rows ): array {
+	public static function sanitize_banners( array $rows, bool $for_save = false ): array {
 		$banners = array();
 		$errors  = array();
 		foreach ( $rows as $row ) {
@@ -263,6 +269,17 @@ final class Settings {
 					$pos
 				);
 				continue;
+			}
+			if ( self::POSITION_CATEGORY_SIDEBAR === $pos && 'desktop' !== $device ) {
+				if ( $for_save || 'mobile' === $device ) {
+					$errors[] = sprintf(
+						/* translators: %s: banner tag */
+						__( 'Placement "%s": the category sidebar is only shown on desktop, set its device to Desktop', 'irios-woocommerce' ),
+						$tag
+					);
+					continue;
+				}
+				$device = 'desktop';
 			}
 			$banners[ $tag ] = array(
 				'tag'      => $tag,
