@@ -2,7 +2,7 @@
 
 Changes in each version of IRIOS Media for WooCommerce. Download any version from the [releases](../../releases).
 
-## Unreleased
+## 1.1.3 - 2026-11-18
 
 ### Added
 
